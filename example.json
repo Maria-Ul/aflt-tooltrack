@@ -1,0 +1,28 @@
+{
+"session_id": "7c1e4f2e-1bcd-4ed2-9d1a-221f1d34c2a1",
+"mode": "return",
+"kit_id": "RRJ/737/32S",
+"timestamp": "2025-09-20T10:21:33Z",
+"threshold": 0.95,
+"expected": [
+    {"class_id":"screwdriver_flat","name":"Отвертка -","expected_count":1},
+    {"class_id":"pliers","name":"Пассатижи","expected_count":1}
+    // ... 11 позиций
+    ],
+"detected": [
+    {
+    "class_id":"screwdriver_flat","count":1,
+    "items":[{"bbox":[412,180,190,64],"confidence":0.98,"track_id":12,"id_mark":"DMX:010203"}]
+    },
+    {
+    "class_id":"pliers","count":0,"items":[]
+    }
+    ],
+"per_class_match": [
+    {"class_id":"screwdriver_flat","match":1.0},
+    {"class_id":"pliers","match":0.0}
+    ],
+"overall_match": 0.91,
+"status": "manual_recount_required",
+"frame_url": "s3://tool-audit/sessions/7c1e.../annotated.jpg"
+}
