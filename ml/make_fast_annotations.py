@@ -69,7 +69,7 @@ def process_image(img_path, class_id, out_img_path, out_label_path, out_oriented
         nh = bh / h
 
         yolo_lines.append(f"{class_id} {cx:.6f} {cy:.6f} {nw:.6f} {nh:.6f}")
-        oriented_labels.append(f"{class_id} {box[0][0]} {box[0][1]} {box[1][0]} {box[1][1]} {box[2][0]} {box[2][1]} {box[3][0]} {box[3][1]}")
+        oriented_labels.append(f"{class_id} {box[0][0]/w:.6f} {box[0][1]/h:.6f} {box[1][0]/w:.6f} {box[1][1]/h:.6f} {box[2][0]/w:.6f} {box[2][1]/h:.6f} {box[3][0]/w:.6f} {box[3][1]/h:.6f}")
         # Draw on debug image
         cv2.rectangle(debug_img, (x, y), (x + bw, y + bh), (0, 0, 255), 2)
         cv2.drawContours(debug_img, [box], 0, (0, 255, 0), 2)
