@@ -30,19 +30,14 @@ def process_image(img_path, class_id, out_img_path, out_label_path, out_oriented
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     _, mask = cv2.threshold(
         gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    # _, mask = cv2.threshold(gray, threshold_val, 255, cv2.THRESH_BINARY_INV)\
+    _, mask = cv2.threshold(gray, threshold_val, 255, cv2.THRESH_BINARY_INV)\
 
     # Fill holes / smooth mask
     mask_clean = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
     mask_clean = cv2.morphologyEx(mask_clean, cv2.MORPH_OPEN, np.ones((3,3), np.uint8))
 
-    # Keep largest connected component (if multiple blobs exist)
     contours, _ = cv2.findContours(mask_clean, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnt = max(contours, key=cv2.contourArea)  # largest contour
-    mask_final = np.zeros_like(mask)
-    cv2.drawContours(mask_final, [cnt], -1, 255, -1)  # fill the contour solid
-
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask_clean = np.zeros_like(mask_clean)
 
     yolo_lines = []
     oriented_labels = []
@@ -56,10 +51,13 @@ def process_image(img_path, class_id, out_img_path, out_label_path, out_oriented
         rot_rect = cv2.minAreaRect(cnt)   # (center (x,y), (w,h), angle)
         box = cv2.boxPoints(rot_rect)     # 4 corner points
         box = box.astype(int)                # convert to integer
-        
 
         # filter: skip very small boxes
         if bbox_area < img_area / 20:
+            continue
+
+        # filter: skip very small boxes
+        if bbox_area > img_area*0.9:
             continue
 
         # YOLO format
@@ -73,6 +71,7 @@ def process_image(img_path, class_id, out_img_path, out_label_path, out_oriented
         # Draw on debug image
         cv2.rectangle(debug_img, (x, y), (x + bw, y + bh), (0, 0, 255), 2)
         cv2.drawContours(debug_img, [box], 0, (0, 255, 0), 2)
+        cv2.drawContours(mask_clean, [cnt], -1, 255, -1) 
 
     # Save label file
     with open(out_label_path, "w", encoding="utf-8") as f:
@@ -81,7 +80,7 @@ def process_image(img_path, class_id, out_img_path, out_label_path, out_oriented
     with open(out_oriented_label_path, "w", encoding="utf-8") as f:
         f.write("\n".join(oriented_labels))
 
-    if not cv2.imwrite(out_img_path, mask_final):
+    if not cv2.imwrite(out_img_path, mask_clean):
         print("❌ Failed to save", out_img_path)
     if not cv2.imwrite(dbg_path, debug_img):
         print("❌ Failed to save", dbg_path)
