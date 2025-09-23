@@ -1,0 +1,1 @@
+export const EXTRA_COLOR="#F4F6FA"
