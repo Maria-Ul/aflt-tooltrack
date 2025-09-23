@@ -1,0 +1,26 @@
+
+export const AUTH_SCREEN_ROUTE = "Auth"
+export const REGISTRATION_SCREEN_ROUTE = "Registration"
+
+export const TOOLS_SCANNER_ROUTE = "ToolsScanner" 
+export const NO_REQUESTS_ROUTE = "NoRequests"
+export const EMPLOYEE_NUMBER_ROUTE = "EmployeeNumber"
+export const WORKERS_PIPELINE_ROLE_ROUTE = "WorkersPipelineRole"
+
+export const QA_EMPLOYEE_ROLE_ROUTE = "QAEmployeeRole"
+export const INCIDENT_LIST_ROUTE = "IncidentList"
+export const INCIDENT_DETAILS_ROUTE = "IncidentDetails"
+
+export const WAREHOUSE_EMPLOYEE_ROUTE = "WarehouseEmployeeRole"
+export const REQUESTS_LIST = "Заявки"
+export const REQUEST_DETAILS = "RequestDetails"
+export const REQUEST_CREATE = "RequestCreate"
+export const AIRCRAFT_LIST = "Воздушные суда"
+export const AIRCRAFT_DETAILS = "AircraftDetails"
+export const AIRCRAFT_CREATE = "AircraftCreate"
+export const KIT_LIST = "Наборы"
+export const KIT_CREATE = "KitCreate"
+export const TEMPLATE_KIT_LIST = "Типы наборов"
+export const TEMPLATE_KIT_CREATE = "TemplateKitCreate"
+export const TEMPLATE_TOOL_LIST = "Типы инструментов"
+export const TEMPLATE_TOOL_CREATE = "TemplateToolCreate" 
