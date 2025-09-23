@@ -4,9 +4,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { SERVICE_NAME } from '../../../App'
 import { headerLeft, headerRight, headerStyle } from '../AppHeader'
 import { EMPLOYEE_NUMBER_ROUTE, NO_REQUESTS_ROUTE, TOOLS_SCANNER_ROUTE } from '../Screens'
-import ToolsScanerScreen from './ToolsScanerScreen'
 import NoRequestsScreen from './NoRequestsScreen'
 import EmployeeNumberScreen from './EmployeeNumberScreen'
+import ToolsScanerScreen from './tool_scanner/ToolsScanerScreen'
 
 const WorkersPipelineStack = createNativeStackNavigator()
 

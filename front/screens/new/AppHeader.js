@@ -18,9 +18,9 @@ export const preloginHeaderLeft = () => (
 
 export const headerLeft = () => (
     <HStack alignItems='center'>
-        <Button variant='outline' ml='$5' mr='$2'>
+        {/* <Button variant='outline' ml='$5' mr='$2'>
             <ButtonIcon as={MenuIcon} />
-        </Button>
+        </Button> */}
         <Image ml='$5' mr='$10'
             style={styles.headerLogoImage}
             source={require("../../assets/logo_aeroflot.png")} />
