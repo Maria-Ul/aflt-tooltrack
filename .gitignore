@@ -32,6 +32,8 @@ MANIFEST
 *.manifest
 *.spec
 
+ml/yolo_dataset_2/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
