@@ -6,3 +6,5 @@ pika
 python-dotenv
 databases
 asyncpg
+bcrypt
+alembic
