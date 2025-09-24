@@ -8,3 +8,5 @@ databases
 asyncpg
 bcrypt
 alembic
+python-jose[cryptography]
+passlib[bcrypt]
