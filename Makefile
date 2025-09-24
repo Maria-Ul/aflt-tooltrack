@@ -10,3 +10,9 @@ up: ## Start all services
 
 down: ## Stop all services
 	$(COMPOSE) down
+
+migration-autogenerate:
+	$(COMPOSE) exec backend alembic revision --autogenerate -m "$(MESSAGE)"
+
+migration-upgrade:
+	$(COMPOSE) exec backend alembic upgrade head
