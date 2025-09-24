@@ -45,7 +45,6 @@ def process_image_center_crop(
 
     # ---- Mask + Threshold ----
     gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite('gray.png', gray)
     _, mask = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     # # Fill holes / smooth mask
     # mask_clean = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, np.ones((5,5), np.uint8))
@@ -88,26 +87,20 @@ def process_image_center_crop(
             f"{class_id} " + " ".join([f"{px/orig_w:.6f} {py/orig_h:.6f}" for px,py in box])
         )
 
-        # Draw for debug
-        cv2.rectangle(debug_img, (gx, gy), (gx+bw, gy+bh), (0,0,255), 2)
-        cv2.drawContours(debug_img, [box], 0, (0,255,0), 2)
-        cv2.drawContours(global_mask, [global_cnt], -1, 255, -1)
-
     # ---- Save outputs ----
     with open(out_label_path, "w", encoding="utf-8") as f:
         f.write("\n".join(yolo_lines))
-    with open(out_oriented_label_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(oriented_labels))
+    # with open(out_oriented_label_path, "w", encoding="utf-8") as f:
+    #     f.write("\n".join(oriented_labels))
 
-    cv2.imwrite(out_img_path, global_mask)
-    cv2.imwrite(dbg_path, debug_img)
+    cv2.imwrite(out_img_path, img)
 
 # --- Driver ---
 if __name__=="__main__":
 
     # --- CONFIG ---
-    dataset_root = "data/aflt_data"
-    output_root = "ml/yolo_dataset"
+    dataset_root = "data"
+    output_root = "data/yolo_dataset"
     threshold_val = 100
 
     # Collect class names
@@ -116,7 +109,7 @@ if __name__=="__main__":
     print("Class mapping:", class_to_id)
 
     # Ensure output structure
-    for sub in ["mask", "labels", "debug", "oriented_labels"]:
+    for sub in ["images", "labels", "debug", "oriented_labels"]:
         os.makedirs(os.path.join(output_root, sub), exist_ok=True)
 
     # Main loop
@@ -125,7 +118,7 @@ if __name__=="__main__":
         img_paths = glob.glob(os.path.join(dataset_root, cls, "*.*"))
         for img_path in img_paths:
             fname, ext = os.path.splitext(os.path.basename(img_path))
-            out_img_path   = os.path.join(output_root, "mask", fname+ext)
+            out_img_path   = os.path.join(output_root, "images", fname+ext)
             out_label_path = os.path.join(output_root, "labels", fname+".txt")
             out_oriented_label_path = os.path.join(output_root, "oriented_labels", fname+".txt")
             dbg_path       = os.path.join(output_root, "debug", fname+ext)

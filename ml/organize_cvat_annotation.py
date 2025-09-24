@@ -3,9 +3,9 @@ import shutil
 import glob
 
 # --- Paths ---
-src_images = "my_dataset/images"
-src_labels = "my_dataset/labels"
-src_classes = "my_dataset/classes.txt"
+src_images = r"D:\projects\aflt-tooltrack\data\yolo_dataset\images"
+src_labels = r"D:\projects\aflt-tooltrack\data\yolo_dataset\labels"
+src_classes = "./data/yolo_dataset/classes.txt"
 out_dir = "archive"   # final export folder
 
 # --- Create output dirs ---
