@@ -2,29 +2,29 @@ import { Button, ButtonText, Card, Center, Heading, Input, InputField, Text, VSt
 import { useEffect, useState } from "react"
 import { SESSION_TOKEN, loginRequest } from "../../api/new/login"
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { TOOLS_SCANNER_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from "./Screens"
+import { EMPLOYEE_NUMBER_ROUTE, REGISTRATION_SCREEN_ROUTE, TOOLS_SCANNER_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from "./Screens"
 
 const AuthScreen = ({ navigation }) => {
     useEffect(() => {
         const checkSession = async () => {
             const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
             if (sessionToken.length > 0) {
-                navigation.replace("ImageGenerator")
+                navigation.replace(EMPLOYEE_NUMBER_ROUTE)
             }
         }
         checkSession()
     }, [])
     const onRegistration = () => {
-        navigation.navigate("Registration")
+        navigation.navigate(REGISTRATION_SCREEN_ROUTE)
     }
     const onLogin = () => {
         navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE)
         //navigation.replace(WAREHOUSE_EMPLOYEE_ROUTE)
-        // loginRequest({
-        //     username: login, password: password, onSuccess: () => {
-        //         navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE)
-        //     }
-        // })
+        loginRequest({
+            username: login, password: password, onSuccess: () => {
+                navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE)
+            }
+        })
     }
     const [login, setLogin] = useState("")
     const [password, setPassword] = useState("")

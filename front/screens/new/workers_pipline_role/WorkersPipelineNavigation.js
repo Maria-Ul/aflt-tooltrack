@@ -12,7 +12,7 @@ const WorkersPipelineStack = createNativeStackNavigator()
 
 const WorkersPipelineNavigation = () => {
     return (
-        <WorkersPipelineStack.Navigator>
+        <WorkersPipelineStack.Navigator initialRouteName={EMPLOYEE_NUMBER_ROUTE}>
             <WorkersPipelineStack.Screen
                 name={TOOLS_SCANNER_ROUTE}
                 component={ToolsScanerScreen}

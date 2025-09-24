@@ -1,6 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
-import { generateImageApi } from "../baseApi"
+import { afltToolscanApi } from "../baseApi"
 import { SESSION_TOKEN } from "./login"
+
+export const ADMIN_ROLE = "administrator"
+export const WAREHOUSE_EMPLOYEE_ROLE = "warehouse_employee"
+export const WORKER_ROLE = "aviation_engineer"
+export const WORKERS_PIPELINE_ROLE = "conveyor"
+export const QA_EMPLOYEE_ROLE = "quality_control_specialist"
 
 export const registerReguset = async ({
     employeeNumber,
@@ -11,15 +17,17 @@ export const registerReguset = async ({
     password, 
     onSuccess
 }) => {
-    var response = await generateImageApi.post(
+    var response = await afltToolscanApi.post(
         url = "/register",
         data = {
-            username: username,
+            tab_number: employeeNumber,
+            full_name: surname + " " + name + " " + patronymic,
+            role: role,
             password: password,
         }
     )
     if (response.status == 201) {
-        AsyncStorage.setItem(SESSION_TOKEN, response.data.token)
+        AsyncStorage.setItem(SESSION_TOKEN, response.data.access_token)
         console.log(response)
         onSuccess()
     } else {

@@ -1,13 +1,15 @@
-import { Button, ButtonIcon, ButtonText, HStack, Image, MenuIcon } from "@gluestack-ui/themed"
+import { Button, ButtonIcon, ButtonText, HStack, Image, MenuIcon, Text } from "@gluestack-ui/themed"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useNavigation } from "@react-navigation/native";
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { AUTH_SCREEN_ROUTE, USER_GUIDE_ROUTE } from "./Screens";
+import { SESSION_TOKEN } from "../../api/new/login"
 
 const APP_HEADER_HEIGHT = 80
 
 export const headerStyle = {
-  height: APP_HEADER_HEIGHT,
-  backgroundColor: "#F4F6FA"
+    height: APP_HEADER_HEIGHT,
+    backgroundColor: "#F4F6FA"
 }
 
 export const preloginHeaderLeft = () => (
@@ -31,17 +33,18 @@ export const headerRight = () => {
     const navigation = useNavigation()
     const onExit = () => {
         AsyncStorage.setItem(SESSION_TOKEN, "")
-        navigation.navigate("Auth")
+        navigation.replace(AUTH_SCREEN_ROUTE)
     }
     const onUserGuide = () => {
-        navigation.navigate("UserGuide")
+        navigation.navigate(USER_GUIDE_ROUTE)
     }
     return (
-        <HStack space='xs'>
+        <HStack space='xs' alignItems="center">
             {/* <Avatar>
           <AvatarFallbackText></AvatarFallbackText>
         </Avatar>
         <Heading mr='$5'></Heading> */}
+            <Text size='lg' mr='$5'>Иванов И. И., Авиаинженер</Text>
             <Button mr="$5" variant="outline" onPress={onUserGuide}>
                 <ButtonText>Инструкция</ButtonText>
             </Button>
@@ -55,7 +58,7 @@ export const headerRight = () => {
 export const preloginHeaderRight = () => {
     const navigation = useNavigation()
     const onUserGuide = () => {
-        navigation.navigate("UserGuide")
+        navigation.navigate(USER_GUIDE_ROUTE)
     }
     return (
         <Button mr="$5" variant="outline" onPress={onUserGuide}>
@@ -78,14 +81,14 @@ export const guideHeaderRight = () => {
 
 const styles = StyleSheet.create({
     container: {
-      flex: 1,
-      backgroundColor: '#fff',
-      alignItems: 'center',
-      justifyContent: 'center',
+        flex: 1,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     headerLogoImage: {
-      resizeMode: "contain",
-      width: 250,
-      height: APP_HEADER_HEIGHT,
+        resizeMode: "contain",
+        width: 250,
+        height: APP_HEADER_HEIGHT,
     }
-  });
+});

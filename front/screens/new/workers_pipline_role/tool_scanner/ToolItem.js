@@ -14,9 +14,7 @@ const ToolItem = ({
                 <Text size='lg'>{name}</Text>
                 {
                     successRecognition ?
-                        <View /> : <Text size='xs' color='orange'>
-                            Не удается точно определить инструмент
-                        </Text>
+                        <View /> : <Text size='xs' color='orange'>Не удается точно определить инструмент</Text>
                 }
 
             </VStack>

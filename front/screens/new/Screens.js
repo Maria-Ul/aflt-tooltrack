@@ -24,3 +24,5 @@ export const TEMPLATE_KIT_LIST = "Типы наборов"
 export const TEMPLATE_KIT_CREATE = "TemplateKitCreate"
 export const TEMPLATE_TOOL_LIST = "Типы инструментов"
 export const TEMPLATE_TOOL_CREATE = "TemplateToolCreate" 
+
+export const USER_GUIDE_ROUTE = "UserGuide"
