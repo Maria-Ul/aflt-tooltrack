@@ -20,8 +20,18 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@router.websocket("/ws/video")
+@router.websocket(
+    "/ws/video",
+    # summary="WebSocket для передачи видео",
+    # description="WebSocket endpoint для передачи видео чанков в реальном времени"
+)
 async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket для передачи видео.
+    
+    Принимает бинарные данные (чанки видео) и отправляет подтверждения.
+    Используется для загрузки видео с камеры или устройств.
+    """
     await manager.connect(websocket)
     try:
         while True:
@@ -32,8 +42,18 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
         print("Client disconnected")
 
-@router.websocket("/ws/video/stream")
+@router.websocket(
+    "/ws/video/stream",
+    # summary="WebSocket для стриминга видео",
+    # description="WebSocket endpoint для потоковой передачи видео клиенту"
+)
 async def video_stream(websocket: WebSocket):
+    """
+    WebSocket для стриминга видео.
+    
+    Передает видеофайл клиенту чанками в реальном времени.
+    В реальной системе может использоваться для трансляции с камер.
+    """
     await websocket.accept()
     try:
         chunk_size = 1024 * 32
