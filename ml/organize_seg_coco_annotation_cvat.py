@@ -2,11 +2,12 @@ import os, json
 from PIL import Image
 
 # папки
-images_dir = "data/seg_data/bokorezy/images"
-labels_dir = "data/seg_data/bokorezy/labels"
+dir_path = "data/polygons/results"
+images_dir = f"data/polygons/otvertka_minus"
+labels_dir = f"{dir_path}/labels"
 
 # Если у вас всегда один и тот же класс для всего датасета
-CLASS_NAME = "bokorezy"
+CLASS_NAME = "otvertka_minus"
 categories = [{"id": 1, "name": CLASS_NAME}]
 
 images, annotations = [], []
@@ -62,6 +63,6 @@ coco = {
 }
 
 
-os.makedirs("data/seg_data/bokorezy/annotations", exist_ok=True)
-with open("data/seg_data/bokorezy/annotations/instances_default.json", "w") as f:
+os.makedirs(f"{dir_path}/annotations", exist_ok=True)
+with open(f"{dir_path}//annotations/instances_default.json", "w") as f:
     json.dump(coco, f, indent=2)
