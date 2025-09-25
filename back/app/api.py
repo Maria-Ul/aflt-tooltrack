@@ -13,6 +13,9 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from . import models, schemas
 import bcrypt
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi.responses import HTMLResponse
+from typing import List
 
 router = APIRouter()
 
@@ -30,8 +33,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60  # Время жизни токена
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-router = APIRouter()
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -111,3 +112,36 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
 @router.get("/users/me", response_model=schemas.User)
 async def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def send_personal_message(self, message, websocket: WebSocket):
+        await websocket.send_text(message)
+
+manager = ConnectionManager()
+
+@router.websocket("/ws/video")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_bytes()  # Получаем бинарные данные (чанки видео)
+            # Здесь можно сохранить chunk в файл, базу или передать в обработчик
+            # Для примера просто печатаем размер данных
+            print(f"Received video chunk of size: {len(data)} bytes")
+
+            # Можно отправить подтверждение клиенту
+            await websocket.send_text(f"Chunk of size {len(data)} received")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        print("Client disconnected")
