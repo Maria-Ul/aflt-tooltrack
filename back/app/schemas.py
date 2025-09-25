@@ -1,26 +1,26 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
 from .models import Role
 
-class UserCreate(BaseModel):
-    tab_number: str = Field(..., min_length=1, max_length=10)
-    full_name: str = Field(..., min_length=2)
-    password: str = Field(..., min_length=8)
-    role: Role
-
-
-class UserLogin(BaseModel):
-    tab_number: str = Field(..., min_length=1, max_length=10)
-    password: str = Field(..., min_length=8)
-
-
-class User(BaseModel):
-    id: int
+class UserBase(BaseModel):
     tab_number: str
     full_name: str
     role: Role
-    created_at: str
-    updated_at: str
+
+class UserCreate(UserBase):
+    password: str
+
+class User(UserBase):
+    id: int
 
     class Config:
         orm_mode = True
+        from_attributes=True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class UserLogin(BaseModel):
+    tab_number: str
+    password: str
