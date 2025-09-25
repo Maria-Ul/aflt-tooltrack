@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .database import database, engine
-from . import models
+from app.models import models
 # from .api import router as api_router
 from app.api.main import router as api_router
 from fastapi.middleware.cors import CORSMiddleware
