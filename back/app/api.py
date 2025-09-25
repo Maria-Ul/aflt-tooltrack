@@ -16,6 +16,7 @@ import bcrypt
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
 from fastapi.responses import HTMLResponse
 from typing import List
+import asyncio
 
 router = APIRouter()
 
@@ -145,3 +146,23 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         print("Client disconnected")
+
+@router.websocket("/ws/video/stream")
+async def video_stream(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        # Пример: читаем видеофайл по частям и отправляем чанки клиенту
+        # В реальном приложении можно стримить с камеры или из другого источника
+        
+        chunk_size = 1024 * 32  # 32 Кб
+        with open("/app/app/video.mov", "rb") as video_file:
+            while True:
+                chunk = video_file.read(chunk_size)
+                if not chunk:
+                    break
+                await websocket.send_bytes(chunk)
+                await asyncio.sleep(0.03)  # небольшой таймаут для имитации реального стрима (~30 fps)
+
+        await websocket.close()
+    except WebSocketDisconnect:
+        print("Клиент отключился")
