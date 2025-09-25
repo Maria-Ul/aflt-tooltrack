@@ -11,3 +11,6 @@ alembic
 python-jose[cryptography]
 passlib[bcrypt]
 jwt
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0

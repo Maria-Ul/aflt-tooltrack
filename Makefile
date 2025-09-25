@@ -16,3 +16,7 @@ migration-autogenerate:
 
 migration-upgrade:
 	$(COMPOSE) exec backend alembic upgrade head
+
+test:
+	@echo "Running tests in Docker..."
+	$(COMPOSE) run --rm backend pytest /app/app/tests/ -v
