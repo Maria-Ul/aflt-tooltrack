@@ -19,4 +19,4 @@ migration-upgrade:
 
 test:
 	@echo "Running tests in Docker..."
-	$(COMPOSE) run --rm backend pytest /app/app/tests/ -v
+	$(COMPOSE) run --rm backend pytest /app/app/tests/
