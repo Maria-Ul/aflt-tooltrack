@@ -1,8 +1,9 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DateTime, func, JSON, Boolean, Table
 from sqlalchemy.orm import relationship
-from .database import Base
+from ..database import Base
 import enum
 from enum import Enum as PyEnum
+
 
 # Association table for many-to-many relationship between ToolSetType and ToolType
 tool_set_type_tool_types = Table(

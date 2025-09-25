@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 import hashlib
 from app.database import SessionLocal
-from app import models
+from app.models import models
 import bcrypt
 
 SECRET_KEY = "your_secret_key_here"

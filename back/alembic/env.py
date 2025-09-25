@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.models import Base # Импорт вашей модели Base из app/models.py
+from app.models.models import Base # Импорт вашей модели Base из app/models.py
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
