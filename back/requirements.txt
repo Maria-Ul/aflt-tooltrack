@@ -10,3 +10,4 @@ bcrypt
 alembic
 python-jose[cryptography]
 passlib[bcrypt]
+jwt
