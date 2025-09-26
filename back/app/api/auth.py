@@ -5,7 +5,7 @@ from .dependencies import get_db, authenticate_user, create_access_token, get_pa
 from app.schemas import user_schema
 from app.models import models
 
-router = APIRouter(prefix="/auth", tags=["authentication"])
+router = APIRouter(prefix="/auth", tags=["Авторизация"])
 
 @router.post(
     "/register", 

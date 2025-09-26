@@ -5,7 +5,7 @@ from .dependencies import get_db, get_current_user
 from app.schemas import user_schema
 from app.models import models
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(prefix="/users", tags=["Пользователь"])
 
 @router.get(
     "/me", 

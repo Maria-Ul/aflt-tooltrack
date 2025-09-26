@@ -5,7 +5,7 @@ from .dependencies import get_db, get_current_user
 from app.models import models
 from app.schemas import tool_set_type_schema
 
-router = APIRouter(prefix="/tool-set-types", tags=["tool-set-types"])
+router = APIRouter(prefix="/tool-set-types", tags=["Тип набора инструментов"])
 
 @router.post(
     "/", 
