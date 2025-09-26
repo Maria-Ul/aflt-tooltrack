@@ -14,17 +14,17 @@ tool_set_type_tool_types = Table(
 )
 
 class Role(PyEnum):
-    WAREHOUSE_EMPLOYEE = "warehouse_employee"
-    AVIATION_ENGINEER = "aviation_engineer"
-    CONVEYOR = "conveyor"
-    ADMINISTRATOR = "administrator"
-    QUALITY_CONTROL_SPECIALIST = "quality_control_specialist"
+    WAREHOUSE_EMPLOYEE = "WAREHOUSE_EMPLOYEE"
+    AVIATION_ENGINEER = "AVIATION_ENGINEER"
+    CONVEYOR = "CONVEYOR"
+    ADMINISTRATOR = "ADMINISTRATOR"
+    QUALITY_CONTROL_SPECIALIST = "QUALITY_CONTROL_SPECIALIST"
     
 class MaintenanceRequestStatus(PyEnum):
-    CREATED = "created"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    INCIDENT = "incident"
+    CREATED = "CREATED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    INCIDENT = "INCIDENT"
 
 class User(Base):
     __tablename__ = "users"
@@ -106,10 +106,10 @@ class MaintenanceRequest(Base):
     incident = relationship("Incident", uselist=False, back_populates="maintenance_request")
 
 class IncidentStatus(enum.Enum):
-    OPEN = "open"
-    INVESTIGATING = "investigating"
-    RESOLVED = "resolved"
-    CLOSED = "closed"
+    OPEN = "OPEN"
+    INVESTIGATING = "INVESTIGATING"
+    RESOLVED = "RESOLVED"
+    CLOSED = "CLOSED"
 
 class Incident(Base):
     __tablename__ = "incidents"
