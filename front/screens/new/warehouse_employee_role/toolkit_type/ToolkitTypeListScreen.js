@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const TemplateToolListScreen = () => {
+const ToolkitTypeListScreen = () => {
   return (
     <View>
-      <Text>TemplateToolListScreen</Text>
+      <Text>TemplateKitListScreen</Text>
     </View>
   )
 }
 
-export default TemplateToolListScreen
+export default ToolkitTypeListScreen
 
 const styles = StyleSheet.create({})

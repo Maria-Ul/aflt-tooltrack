@@ -1,6 +1,7 @@
 import { Button, ButtonText, Card, Center, CircleIcon, Heading, HStack, Input, InputField, Radio, RadioGroup, RadioIcon, RadioIndicator, RadioLabel, Text, VStack } from "@gluestack-ui/themed"
 import { useState } from "react";
 import { ADMIN_ROLE, QA_EMPLOYEE_ROLE, register, registerReguset, WAREHOUSE_EMPLOYEE_ROLE, WORKER_ROLE, WORKERS_PIPELINE_ROLE } from "../../api/new/register";
+import { QA_EMPLOYEE_ROLE_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from "./Screens";
 
 const RegistrationScreen = ({ navigation }) => {
     const [password, setPassword] = useState("")
@@ -21,8 +22,14 @@ const RegistrationScreen = ({ navigation }) => {
             patronymic: patronymic,
             password: password,
             role: role,
-            onSuccess: () => {
-                //navigation.replace("ImageGenerator")
+            onSuccess: ({ resRole }) => {
+                switch (resRole) {
+                    case WORKER_ROLE: navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE); break
+                    case ADMIN_ROLE: navigation.replace(ADMIN_ROLE); break
+                    case WAREHOUSE_EMPLOYEE_ROLE: navigation.replace(WAREHOUSE_EMPLOYEE_ROUTE); break
+                    case QA_EMPLOYEE_ROLE: navigation.replace(QA_EMPLOYEE_ROLE_ROUTE); break
+                    case WORKERS_PIPELINE_ROLE: navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE); break
+                }
             }
         })
     }
@@ -37,7 +44,11 @@ const RegistrationScreen = ({ navigation }) => {
                     <Heading>Регистрация</Heading>
                     <Text>Табельный номер сотрудника</Text>
                     <Input>
-                        <InputField value={employeeNumber} onChangeText={setEmployeeNumber} placeholder="Табельный номер" />
+                        <InputField
+                            inputMode="decimal"
+                            value={employeeNumber}
+                            onChangeText={setEmployeeNumber}
+                            placeholder="Табельный номер" />
                     </Input>
                     <Text>ФИО</Text>
                     <Input>

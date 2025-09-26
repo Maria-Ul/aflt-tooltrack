@@ -1,9 +1,11 @@
 import { Button, ButtonIcon, ButtonText, HStack, Image, MenuIcon, Text } from "@gluestack-ui/themed"
-import AsyncStorage from "@react-native-async-storage/async-storage"
 import { useNavigation } from "@react-navigation/native";
 import { StyleSheet } from 'react-native';
 import { AUTH_SCREEN_ROUTE, USER_GUIDE_ROUTE } from "./Screens";
-import { SESSION_TOKEN } from "../../api/new/login"
+import { logout } from "../../api/new/logout";
+import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { USER_NAME, USER_ROLE } from "../../api/new/login";
 
 const APP_HEADER_HEIGHT = 80
 
@@ -30,21 +32,36 @@ export const headerLeft = () => (
 )
 
 export const headerRight = () => {
+    var [userName, setUserName] = useState("")
+    var [userRole, setUserRole] = useState("")
+
+    useEffect(() => {
+        const updateSessionData = async () => {
+            var userName = await AsyncStorage.getItem(USER_NAME)
+            var userRole = await AsyncStorage.getItem(USER_ROLE)
+            setUserName(userName)
+            setUserRole(userRole)
+        }
+        updateSessionData()
+    }, [])
+
     const navigation = useNavigation()
     const onExit = () => {
-        AsyncStorage.setItem(SESSION_TOKEN, "")
+        logout()
         navigation.replace(AUTH_SCREEN_ROUTE)
     }
     const onUserGuide = () => {
         navigation.navigate(USER_GUIDE_ROUTE)
     }
+
+
     return (
         <HStack space='xs' alignItems="center">
             {/* <Avatar>
           <AvatarFallbackText></AvatarFallbackText>
         </Avatar>
         <Heading mr='$5'></Heading> */}
-            <Text size='lg' mr='$5'>Иванов И. И., Авиаинженер</Text>
+            <Text size='lg' mr='$5'>{userName + ", " + userRole}</Text>
             <Button mr="$5" variant="outline" onPress={onUserGuide}>
                 <ButtonText>Инструкция</ButtonText>
             </Button>

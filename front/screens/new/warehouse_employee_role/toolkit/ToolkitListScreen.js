@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const AircraftListScreen = () => {
+const ToolkitListScreen = () => {
   return (
     <View>
-      <Text>AircraftListScreen</Text>
+      <Text>KitListScreen</Text>
     </View>
   )
 }
 
-export default AircraftListScreen
+export default ToolkitListScreen
 
 const styles = StyleSheet.create({})

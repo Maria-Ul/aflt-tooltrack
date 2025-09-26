@@ -1,28 +1,84 @@
 import { StyleSheet } from 'react-native'
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { Button, ButtonText, Center, Heading, HStack, VStack, Text, View, Card, Box } from '@gluestack-ui/themed'
 import { Header } from '@rneui/themed'
 import ToolItem from './ToolItem'
 import WhiteCard from '../../../../components/WhiteCard'
 import ResultModal from './ResultModal'
-
+import { BACKEND_URL } from '../../../../api/baseApi'
+import { io } from 'socket.io-client'
 
 // использовать Grid
 const ToolsScanerScreen = ({ navigation }) => {
-    const ref = useRef(null)
+    const cameraRef = useRef(null)
+    const socketRef = useRef(null)
+    const streamIntervalRef = useRef(null);
+
+    const [isShowResultModal, setIsShowResultModal] = useState(false)
+    const [isStreaming, setIsStreaming] = useState(false);
 
     const [permission, requestPermission] = useCameraPermissions()
 
-    const [isShowResultModal, setIsShowResultModal] = useState(false)
+    const captureFrame = useCallback(async () => {
+        console.log("CAPTURE" + cameraRef.current + "-" + isStreaming)
+        try {
+            const options = {
+                quality: 0.3,
+                base64: true,
+                width: 320,
+                height: 240
+            };
 
-    if (!permission) {
-        // Camera permissions are still loading.
-        return <View />;
+            const data = await cameraRef.current.takePictureAsync(options);
+
+            if (socketRef.current) {
+                console.log(data.base64)
+                // socketRef.current.emit('/ws/video', {
+                //     frame: data.base64,
+                //     timestamp: Date.now(),
+                //     width: options.width,
+                //     height: options.height
+                // });
+                socketRef.current.send({bytes:data.base64})
+            }
+        } catch (error) {
+            console.log('Ошибка захвата кадра:', error);
+        }
+    }, [socketRef])
+
+    const launchStream = useCallback(() => {
+        setIsStreaming(true);
+        streamIntervalRef.current = setInterval(captureFrame, 200); // 5 FPS
+    }, [captureFrame])
+
+    const stopStream = () => {
+        if (streamIntervalRef.current) {
+            clearInterval(streamIntervalRef.current);
+            streamIntervalRef.current = null;
+        }
+        setIsStreaming(false);
     }
 
+    useEffect(() => {
+        console.log("USE_EFFECT")
+        socketRef.current = new WebSocket("ws://localhost:8000/api/ws/video") //io("ws://localhost:8000/ws/video")
+        return () => {
+            if (socketRef.current) {
+                //socketRef.current.disconnect();
+                socketRef.current.close()
+            }
+            if (streamIntervalRef.current) {
+                clearInterval(streamIntervalRef.current);
+            }
+            stopStream()
+        };
+    }, []);
+
+
+    if (!permission) { return <View /> }
+
     if (!permission.granted) {
-        // Camera permissions are not granted yet.
         return (
             <View style={styles.container} width='100%' height='100%'>
                 <Center p='$10'>
@@ -38,7 +94,6 @@ const ToolsScanerScreen = ({ navigation }) => {
             </View>
         );
     }
-
 
     return (
         <>
@@ -60,7 +115,7 @@ const ToolsScanerScreen = ({ navigation }) => {
                                 threshold={0.98}
                             />
 
-                            <Button mb='$3' onPress={setIsShowResultModal.bind(true)}>
+                            <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
                                 <ButtonText>Зафиксировать</ButtonText>
                             </Button>
                             <Button variant='outline'>
@@ -71,16 +126,20 @@ const ToolsScanerScreen = ({ navigation }) => {
                 </VStack>
                 <VStack style={styles.container_camera} p='$10'>
                     <CameraView
-                        ref={ref}
+                        ref={cameraRef}
                         style={styles.camera}
+                        onCameraReady={() => {
+                            console.log("READY")
+                            launchStream()
+                        }}
                     />
                 </VStack>
             </HStack>
             <ResultModal
-            isOpen={isShowResultModal}
-            isSuccessScan={false}
-            onClose={setIsShowResultModal.bind(null, false)}
-            onContinueClick={setIsShowResultModal.bind(null, false)}
+                isOpen={isShowResultModal}
+                isSuccessScan={false}
+                onClose={setIsShowResultModal.bind(null, false)}
+                onContinueClick={setIsShowResultModal.bind(null, false)}
             />
         </>
     )

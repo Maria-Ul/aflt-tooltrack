@@ -13,12 +13,12 @@ export const registerReguset = async ({
     name,
     surname,
     patronymic,
-    role, 
-    password, 
+    role,
+    password,
     onSuccess
 }) => {
     var response = await afltToolscanApi.post(
-        url = "/register",
+        url = "/api/auth/register",
         data = {
             tab_number: employeeNumber,
             full_name: surname + " " + name + " " + patronymic,
@@ -29,7 +29,7 @@ export const registerReguset = async ({
     if (response.status == 201) {
         AsyncStorage.setItem(SESSION_TOKEN, response.data.access_token)
         console.log(response)
-        onSuccess()
+        onSuccess({ resRole: response.data.role })
     } else {
         console.log(response)
     }
