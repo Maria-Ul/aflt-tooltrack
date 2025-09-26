@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 from app.main import app, database
 from app.database import Base
 from app.api.dependencies import get_db
-from app.models.models import User, Role, ToolType
+from app.models.models import User, Role, ToolType, ToolSet, ToolSetType, ToolType, User, Role
 
 # Тестовая база данных в памяти
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -145,3 +145,84 @@ def test_tool_type_hierarchy(db_session):
         "subcategory": subcategory,
         "tool": tool
     }
+@pytest.fixture
+def test_tool_set_type(db_session):
+    """Создает тестовый тип набора инструментов"""
+    # Сначала создаем инструмент
+    tool_type = ToolType(
+        name="Тестовый инструмент",
+        category_id=None,
+        is_item=True
+    )
+    db_session.add(tool_type)
+    db_session.commit()
+    db_session.refresh(tool_type)
+    
+    # Затем создаем тип набора
+    tool_set_type = ToolSetType(
+        name="Тестовый набор",
+        description="Тестовое описание набора",
+        tool_type_ids=[tool_type.id]
+    )
+    db_session.add(tool_set_type)
+    db_session.commit()
+    db_session.refresh(tool_set_type)
+    return tool_set_type
+
+@pytest.fixture
+def test_tool_set_type_with_tools(db_session):
+    """Создает тестовый тип набора с несколькими инструментами"""
+    # Создаем несколько инструментов
+    tool_types = []
+    for i in range(3):
+        tool_type = ToolType(
+            name=f"Инструмент {i}",
+            category_id=None,
+            is_item=True
+        )
+        db_session.add(tool_type)
+        tool_types.append(tool_type)
+    
+    db_session.commit()
+    for tool_type in tool_types:
+        db_session.refresh(tool_type)
+    
+    # Создаем тип набора с этими инструментами
+    tool_type_ids = [tool_type.id for tool_type in tool_types]
+    tool_set_type = ToolSetType(
+        name="Набор с инструментами",
+        description="Набор с несколькими инструментами",
+        tool_type_ids=tool_type_ids
+    )
+    db_session.add(tool_set_type)
+    db_session.commit()
+    db_session.refresh(tool_set_type)
+    return tool_set_type
+
+@pytest.fixture
+def test_tool_set_type_with_tool_set(db_session, test_tool_set_type):
+    """Создает тестовый тип набора, используемый в наборе инструментов"""
+    # Создаем ToolSet, который использует этот ToolSetType
+    tool_set = ToolSet(
+        tool_set_type_id=test_tool_set_type.id,
+        batch_number="TEST-001",
+        description="Тестовый набор инструментов",
+        batch_map={}
+    )
+    db_session.add(tool_set)
+    db_session.commit()
+    db_session.refresh(tool_set)
+    return test_tool_set_type
+
+@pytest.fixture
+def test_tool_type_item(db_session):
+    """Создает тестовый инструмент"""
+    tool_type = ToolType(
+        name="Тестовый инструмент для наборов",
+        category_id=None,
+        is_item=True
+    )
+    db_session.add(tool_type)
+    db_session.commit()
+    db_session.refresh(tool_type)
+    return tool_type
