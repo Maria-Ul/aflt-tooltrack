@@ -5,7 +5,7 @@ from .dependencies import get_db, get_current_user
 from app.schemas import aircraft_schema
 from app.models import models
 
-router = APIRouter(prefix="/aircraft", tags=["aircraft"])
+router = APIRouter(prefix="/aircraft", tags=["Воздушные судная"])
 
 @router.post(
     "/", 

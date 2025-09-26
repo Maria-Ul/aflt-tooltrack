@@ -2,7 +2,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from typing import List
 import asyncio
 
-router = APIRouter()
+router = APIRouter(prefix="/ws", tags=["Видео потоки"])
 
 class ConnectionManager:
     def __init__(self):
@@ -21,9 +21,7 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 @router.websocket(
-    "/ws/video",
-    # summary="WebSocket для передачи видео",
-    # description="WebSocket endpoint для передачи видео чанков в реальном времени"
+    "/video",
 )
 async def websocket_endpoint(websocket: WebSocket):
     """
@@ -43,7 +41,7 @@ async def websocket_endpoint(websocket: WebSocket):
         print("Client disconnected")
 
 @router.websocket(
-    "/ws/video/stream",
+    "/video/stream",
     # summary="WebSocket для стриминга видео",
     # description="WebSocket endpoint для потоковой передачи видео клиенту"
 )

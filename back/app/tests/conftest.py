@@ -7,7 +7,7 @@ from sqlalchemy.pool import StaticPool
 from app.main import app, database
 from app.database import Base
 from app.api.dependencies import get_db
-from app.models.models import User, Role, ToolType, ToolSet, ToolSetType, ToolType, User, Role
+from app.models.models import User, Role, ToolType, ToolSet, ToolSetType, ToolType, User, Role, Aircraft, MaintenanceRequest
 
 # Тестовая база данных в памяти
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
@@ -145,29 +145,6 @@ def test_tool_type_hierarchy(db_session):
         "subcategory": subcategory,
         "tool": tool
     }
-@pytest.fixture
-def test_tool_set_type(db_session):
-    """Создает тестовый тип набора инструментов"""
-    # Сначала создаем инструмент
-    tool_type = ToolType(
-        name="Тестовый инструмент",
-        category_id=None,
-        is_item=True
-    )
-    db_session.add(tool_type)
-    db_session.commit()
-    db_session.refresh(tool_type)
-    
-    # Затем создаем тип набора
-    tool_set_type = ToolSetType(
-        name="Тестовый набор",
-        description="Тестовое описание набора",
-        tool_type_ids=[tool_type.id]
-    )
-    db_session.add(tool_set_type)
-    db_session.commit()
-    db_session.refresh(tool_set_type)
-    return tool_set_type
 
 @pytest.fixture
 def test_tool_set_type_with_tools(db_session):
@@ -226,3 +203,90 @@ def test_tool_type_item(db_session):
     db_session.commit()
     db_session.refresh(tool_type)
     return tool_type
+
+
+@pytest.fixture
+def test_tool_set(db_session, test_tool_set_type):
+    """Создает тестовый набор инструментов"""
+    tool_set = ToolSet(
+        tool_set_type_id=test_tool_set_type.id,
+        batch_number="TEST-BATCH-001",
+        description="Тестовый набор инструментов",
+        batch_map={"1": "SN-001", "2": "SN-002"}
+    )
+    db_session.add(tool_set)
+    db_session.commit()
+    db_session.refresh(tool_set)
+    return tool_set
+
+@pytest.fixture
+def test_tool_set_2(db_session, test_tool_set_type):
+    """Создает второй тестовый набор инструментов"""
+    tool_set = ToolSet(
+        tool_set_type_id=test_tool_set_type.id,
+        batch_number="TEST-BATCH-002",
+        description="Второй тестовый набор",
+        batch_map={"1": "SN-003"}
+    )
+    db_session.add(tool_set)
+    db_session.commit()
+    db_session.refresh(tool_set)
+    return tool_set
+
+@pytest.fixture
+def test_tool_set_with_maintenance(db_session, test_tool_set, test_aircraft, test_user):
+    """Создает тестовый набор, используемый в заявке на ТО"""
+    # Создаем заявку на ТО, которая использует этот набор
+    maintenance_request = MaintenanceRequest(
+        aircraft_id=test_aircraft.id,
+        warehouse_employee_id=test_user.id,
+        description="Тестовая заявка",
+        status="created",
+        tool_set_id=test_tool_set.id
+    )
+    db_session.add(maintenance_request)
+    db_session.commit()
+    return test_tool_set
+
+@pytest.fixture
+def test_aircraft(db_session):
+    """Создает тестовый самолет"""
+    aircraft = Aircraft(
+        tail_number="TEST-001",
+        model="Test Model",
+        year_of_manufacture=2020,
+        description="Тестовый самолет"
+    )
+    db_session.add(aircraft)
+    db_session.commit()
+    db_session.refresh(aircraft)
+    return aircraft
+
+@pytest.fixture
+def test_tool_set_type(db_session):
+    """Создает тестовый тип набора инструментов"""
+    # Сначала создаем инструменты
+    tool_types = []
+    for i in range(1, 3):  # Создаем 2 инструмента с ID 1 и 2
+        tool_type = ToolType(
+            name=f"Тестовый инструмент {i}",
+            category_id=None,
+            is_item=True
+        )
+        db_session.add(tool_type)
+        tool_types.append(tool_type)
+    
+    db_session.commit()
+    for tool_type in tool_types:
+        db_session.refresh(tool_type)
+    
+    # Создаем тип набора с этими инструментами
+    tool_set_type = ToolSetType(
+        name="Тестовый тип набора",
+        description="Тестовое описание типа набора",
+        tool_type_ids=[tool_type.id for tool_type in tool_types]  # [1, 2]
+    )
+    db_session.add(tool_set_type)
+    db_session.commit()
+    db_session.refresh(tool_set_type)
+    return tool_set_type
