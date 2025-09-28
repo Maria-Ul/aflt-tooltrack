@@ -170,10 +170,9 @@ def get_tool_type_children(
         models.ToolType.category_id == tool_type_id
     ).all()
     return children
-
 @router.get(
     "/tree/root",
-    response_model=List[tool_types_schema.ToolTypeWithChildren],
+    response_model=List[dict],  # Используем dict чтобы избежать проблем с валидацией
     summary="Получить дерево категорий",
     description="Возвращает дерево категорий и инструментов, начиная с корневого уровня"
 )
@@ -183,26 +182,22 @@ def get_tool_type_tree(
 ):
     """
     Получение полного дерева категорий и инструментов.
-    
-    Возвращает иерархическую структуру, начиная с корневых элементов
-    (элементов без родительской категории).
-    
-    Требуется аутентификация.
     """
     def build_tree(parent_id: Optional[int] = None):
-        """Рекурсивная функция построения дерева"""
         query = db.query(models.ToolType).filter(models.ToolType.category_id == parent_id)
         items = query.all()
         
         result = []
         for item in items:
-            item_data = tool_types_schema.ToolType.from_orm(item)
-            children = build_tree(item.id) if not item.is_item else []
-            result.append(tool_types_schema.ToolTypeWithChildren(
-                **item_data.dict(),
-                children=children,
-                category=item.category
-            ))
+            node = {
+                "id": item.id,
+                "name": item.name,
+                "category_id": item.category_id,
+                "is_item": item.is_item,
+                "children": build_tree(item.id) if not item.is_item else []
+            }
+            result.append(node)
+        
         return result
     
     return build_tree()
