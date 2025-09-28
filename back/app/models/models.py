@@ -50,20 +50,14 @@ class Aircraft(Base):
     maintenance_requests = relationship("MaintenanceRequest", back_populates="aircraft")
     incidents = relationship("Incident", back_populates="aircraft")
 
-class ToolCategory(Base):
-    __tablename__ = "tool_categories"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False, unique=True)
-    tool_types = relationship("ToolType", back_populates="category")
-
 class ToolType(Base):
     __tablename__ = "tool_types"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
-    category_id = Column(Integer, ForeignKey('tool_categories.id'))
+    category_id = Column(Integer, ForeignKey('tool_types.id'))
     is_item = Column(Boolean, nullable=False)
 
-    category = relationship("ToolCategory", back_populates="tool_types")
+    category = relationship("ToolType", foreign_keys=[category_id])
     tool_set_types = relationship("ToolSetType", secondary=tool_set_type_tool_types, back_populates="tool_types")
 
 class ToolSetType(Base):
