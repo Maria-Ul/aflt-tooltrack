@@ -311,7 +311,7 @@ def update_tool_type(
     "/{tool_type_id}", 
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить тип инструмента",
-    description="Удаляет тип инструмента или категорию из системы"
+    description="Удаляет тип инструмента или категорию из системы. Для категорий рекурсивно удаляет все дочерние элементы."
 )
 def delete_tool_type(
     tool_type_id: int,
@@ -320,37 +320,42 @@ def delete_tool_type(
 ):
     """
     Удаление типа инструмента.
-    
-    - **tool_type_id**: ID типа инструмента
-    
-    **Ограничения:**
-    - Нельзя удалить категорию, если у нее есть дочерние элементы
-    - Нельзя удалить тип инструмента, если он используется в наборах инструментов
-    
-    Требуется аутентификация.
     """
-    tool_type = db.query(models.ToolType).filter(models.ToolType.id == tool_type_id).first()
-    if not tool_type:
+    try:
+        # Начинаем транзакцию для безопасности
+        tool_type = db.query(models.ToolType).filter(models.ToolType.id == tool_type_id).first()
+        if not tool_type:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tool type not found"
+            )
+        
+        def delete_children(parent_id: int):
+            """Удаляет всех дочерних элементов"""
+            children = db.query(models.ToolType).filter(
+                models.ToolType.category_id == parent_id
+            ).all()
+            
+            for child in children:
+                # Рекурсивно удаляем детей детей
+                delete_children(child.id)
+                # Удаляем самого ребенка
+                db.delete(child)
+        
+        # Удаляем всех детей (если это категория)
+        if not tool_type.is_item:
+            delete_children(tool_type_id)
+        
+        # Удаляем сам элемент
+        db.delete(tool_type)
+        
+        db.commit()
+        
+    except Exception as e:
+        db.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tool type not found"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting tool type: {str(e)}"
         )
     
-    # Проверяем дочерние элементы (для категорий)
-    if not tool_type.is_item:
-        children_count = db.query(models.ToolType).filter(
-            models.ToolType.category_id == tool_type_id
-        ).count()
-        
-        if children_count > 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Cannot delete category with child elements"
-            )
-    
-    # Проверяем использование в tool_set_types (нужно добавить relationship в модели)
-    # Пока пропускаем эту проверку, нужно добавить соответствующие отношения
-    
-    db.delete(tool_type)
-    db.commit()
     return None
