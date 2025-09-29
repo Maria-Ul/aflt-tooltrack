@@ -33,6 +33,13 @@ MANIFEST
 *.spec
 
 ml/yolo_dataset_2/
+datasets
+ToolSegmentation
+train_yolo_seg.py
+validate_yolo_seg.py
+ml/labeling/sam_l.pt
+yolo11s-seg.pt
+runs
 
 # Installer logs
 pip-log.txt
