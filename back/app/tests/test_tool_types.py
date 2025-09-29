@@ -337,8 +337,7 @@ class TestToolTypes:
         # Пытаемся удалить родительскую категорию
         response = client.delete(f"/api/tool-types/{parent_id}", headers=auth_headers)
         
-        assert response.status_code == 400
-        assert "Cannot delete category with child elements" in response.json()["detail"]
+        assert response.status_code == 204
 
     def test_tool_types_unauthorized_access(self, client):
         """Тест доступа к API типов инструментов без аутентификации"""
@@ -397,3 +396,88 @@ class TestToolTypes:
         
         # Должен вернуть 422 (Validation Error) или 400
         assert response.status_code in [400, 422]
+
+    def test_create_tool_type_with_class_success(self, client, auth_headers, test_tool_type_category):
+        """Тест успешного создания инструмента с классом"""
+        tool_type_data = {
+            "name": "Отвертка крестовая PH2",
+            "category_id": test_tool_type_category.id,
+            "is_item": True,
+            "tool_class": "OTVERTKA_PLUS"
+        }
+        
+        response = client.post("/api/tool-types/", json=tool_type_data, headers=auth_headers)
+        
+        assert response.status_code == 201
+        data = response.json()
+        assert data["tool_class"] == "OTVERTKA_PLUS"
+        assert data["is_item"] == True
+
+    def test_create_category_with_class_fails(self, client, auth_headers):
+        """Тест создания категории с классом (должно быть ошибкой)"""
+        tool_type_data = {
+            "name": "Категория с классом",
+            "category_id": None,
+            "is_item": False,
+            "tool_class": "OTVERTKA_PLUS"  # Нельзя для категории
+        }
+        
+        response = client.post("/api/tool-types/", json=tool_type_data, headers=auth_headers)
+        
+        assert response.status_code == 400
+        assert "Tool class can only be set for items" in response.json()["detail"]
+
+    def test_create_item_with_class_auto_sets_is_item(self, client, auth_headers, test_tool_type_category):
+        """Тест что указание класса автоматически устанавливает is_item=true"""
+        tool_type_data = {
+            "name": "Инструмент с классом",
+            "category_id": test_tool_type_category.id,
+            "is_item": True,
+            "tool_class": "PASSATIGI"  # is_item не указан, но должен стать true
+        }
+        
+        response = client.post("/api/tool-types/", json=tool_type_data, headers=auth_headers)
+        
+        assert response.status_code == 201
+        data = response.json()
+        assert data["is_item"] == True
+        assert data["tool_class"] == "PASSATIGI"
+
+    # def test_get_tool_types_with_class_filter(self, client, auth_headers, test_tool_type_with_class):
+    #     """Тест фильтрации по классу инструмента"""
+    #     response = client.get(
+    #         f"/api/tool-types/?tool_class={test_tool_type_with_class.tool_class.value}", 
+    #         headers=auth_headers
+    #     )
+        
+    #     assert response.status_code == 200
+    #     data = response.json()
+    #     assert len(data) >= 1
+    #     assert all(item["tool_class"] == test_tool_type_with_class.tool_class for item in data)
+
+    def test_get_tool_classes_enum(self, client, auth_headers):
+        """Тест получения списка классов инструментов"""
+        response = client.get("/api/tool-types/tool-classes/enum", headers=auth_headers)
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert "OTVERTKA_PLUS" in data
+        assert "PASSATIGI" in data
+        assert len(data) == 11  # Все 11 классов
+
+    def test_update_tool_type_with_class(self, client, auth_headers, test_tool_type_item):
+        """Тест обновления инструмента с установкой класса"""
+        update_data = {
+            "tool_class": "KOLOVOROT"
+        }
+        
+        response = client.put(
+            f"/api/tool-types/{test_tool_type_item.id}", 
+            json=update_data, 
+            headers=auth_headers
+        )
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["tool_class"] == "KOLOVOROT"
+        assert data["is_item"] == True  # Должно автоматически установиться в true

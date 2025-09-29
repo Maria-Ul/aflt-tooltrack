@@ -50,14 +50,31 @@ class Aircraft(Base):
     maintenance_requests = relationship("MaintenanceRequest", back_populates="aircraft")
     incidents = relationship("Incident", back_populates="aircraft")
 
+
+class ToolClass(PyEnum):
+    """Классы инструментов"""
+    BOKOREZY = "BOKOREZY"
+    KEY_ROZGKOVY_NAKIDNOY_3_4 = "KEY_ROZGKOVY_NAKIDNOY_3_4"
+    KOLOVOROT = "KOLOVOROT"
+    OTKRYVASHKA_OIL_CAN = "OTKRYVASHKA_OIL_CAN"
+    OTVERTKA_MINUS = "OTVERTKA_MINUS"
+    OTVERTKA_OFFSET_CROSS = "OTVERTKA_OFFSET_CROSS"
+    OTVERTKA_PLUS = "OTVERTKA_PLUS"
+    PASSATIGI = "PASSATIGI"
+    PASSATIGI_CONTROVOCHNY = "PASSATIGI_CONTROVOCHNY"
+    RAZVODNOY_KEY = "RAZVODNOY_KEY"
+    SHARNITSA = "SHARNITSA"
+
+
 class ToolType(Base):
     __tablename__ = "tool_types"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, unique=True)
     category_id = Column(Integer, ForeignKey('tool_types.id'))
     is_item = Column(Boolean, nullable=False)
+    tool_class = Column(Enum(ToolClass), nullable=True)  # Новое поле
 
-    category = relationship("ToolType", foreign_keys=[category_id])
+    category = relationship("ToolType", foreign_keys=[category_id], remote_side=[id])
     tool_set_types = relationship("ToolSetType", secondary=tool_set_type_tool_types, back_populates="tool_types")
 
 class ToolSetType(Base):
