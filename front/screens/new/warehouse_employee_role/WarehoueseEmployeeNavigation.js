@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native'
 import { createDrawerNavigator } from '@react-navigation/drawer'
-import { AIRCRAFT_ROUTE, REQUESTS_ROUTE, TOOL_TYPE_ROUTE, TOOLKIT_ROUTE, TOOLKIT_TYPE_ROUTE } from '../Screens'
-import RequestsListScreen from './maintainance_request/RequestsListScreen'
-import ToolkitListScreen from './toolkit/ToolkitListScreen'
-import ToolkitTypeListScreen from './toolkit_type/ToolkitTypeListScreen'
-import AircraftNavigation from './aircraft/AircraftNavigation'
+import { StyleSheet } from 'react-native'
 import { headerLeft, headerRight, headerStyle } from '../AppHeader'
+import { AIRCRAFT_ROUTE, REQUESTS_ROUTE, TOOL_TYPE_ROUTE, TOOLKIT_ROUTE, TOOLKIT_TYPE_ROUTE } from '../Screens'
+import AircraftNavigation from './aircraft/AircraftNavigation'
+import RequestsListScreen from './maintainance_request/RequestsListScreen'
 import ToolTypeNavigation from './tool_type/ToolTypeNavigation'
+import ToolkitListScreen from './toolkit/ToolkitListScreen'
+import ToolkitTypeNavigation from './toolkit_type/ToolkitTypeNavigation'
 
 export const WarehouseEmployeeRoleDrawer = createDrawerNavigator()
 
@@ -43,7 +43,7 @@ const WarehoueseEmployeeNavigation = () => {
             />
             <WarehouseEmployeeRoleDrawer.Screen
                 name={TOOLKIT_TYPE_ROUTE}
-                component={ToolkitTypeListScreen}
+                component={ToolkitTypeNavigation}
                 options={{
                     headerStyle: headerStyle,
                     headerRight: headerRight,

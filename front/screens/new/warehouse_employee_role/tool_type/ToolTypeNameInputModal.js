@@ -25,8 +25,8 @@ const ToolTypeNameInputModal = ({
                 <ModalHeader>
                     <VStack>
                         <Heading size="lg">{
-                            isCategory ? "Введите наименование группы/подгруппы" :
-                                "Введите наименование инструмента"
+                            isCategory ? "Добавление папки" :
+                                "Добавление инструмента"
                         }</Heading>
                     </VStack>
                     <ModalCloseButton>
@@ -37,7 +37,7 @@ const ToolTypeNameInputModal = ({
                     <VStack space="md">
                         <Center>
                             <Input>
-                                <InputField value={nameInput} onChangeText={setNameInput} />
+                                <InputField value={nameInput} onChangeText={setNameInput} placeholder="Введите наименование" />
                             </Input>
                         </Center>
                     </VStack>

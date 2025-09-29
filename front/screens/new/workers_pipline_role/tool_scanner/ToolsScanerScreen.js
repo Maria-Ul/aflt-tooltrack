@@ -121,6 +121,9 @@ const ToolsScanerScreen = ({ navigation }) => {
                             <Button variant='outline'>
                                 <ButtonText>Загрузить фото</ButtonText>
                             </Button>
+                            <Button variant='outline'>
+                                <ButtonText>Загрузить архив</ButtonText>
+                            </Button>
                         </VStack>
                     </Card>
                 </VStack>
