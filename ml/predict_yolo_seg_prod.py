@@ -164,6 +164,7 @@ class SegmentModel:
             dev_str = "CUDA" if torch.cuda.is_available() else "CPU"
             print(f"Модель загружена (PyTorch {dev_str}): {self.model_path}")
 
+    # --------- Public API ---------
 
     def export_to_onnx(self):
         self._ensure_onnx()
@@ -195,7 +196,6 @@ class SegmentModel:
         return getattr(self.r.boxes, "xyxyn", None)
 
     def get_masks(self):
-        # Для задач без масок (другие модели) это будет None
         return getattr(self.r.masks, "xyn", None)
 
 
