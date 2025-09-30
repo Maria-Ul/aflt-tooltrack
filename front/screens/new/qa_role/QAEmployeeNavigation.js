@@ -1,10 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { StyleSheet } from 'react-native'
-import { REQUEST_CREATE_ROUTE, REQUEST_DETAILS_ROUTE, REQUESTS_LIST_ROUTE } from '../../Screens'
-import CreateRequestScreen from './CreateRequestScreen'
-import RequestDetailsScreen from './RequestDetailsScreen'
-import RequestsListScreen from './RequestsListScreen'
 import { INCIDENT_DETAILS_ROUTE, INCIDENT_LIST_ROUTE } from '../Screens'
+import IncidentDetailsScreen from './IncidentDetailsScreen'
 import IncidentsListScreen from './IncidentListScreen'
 
 export const QAEmployeeStack = createNativeStackNavigator()
@@ -18,19 +15,14 @@ const QAEmployeeNavigation = () => {
                 options={{headerShown: false}}
             />
             <QAEmployeeStack.Screen
-                name={REQUEST_CREATE_ROUTE}
-                component={CreateRequestScreen}
-                options={{headerShown: false}}
-            />
-            <QAEmployeeStack.Screen
                 name={INCIDENT_DETAILS_ROUTE}
-                component={Incide}
+                component={IncidentDetailsScreen}
                 options={{headerShown: false}}
             />
         </QAEmployeeStack.Navigator>
     )
 }
 
-export default ServiceRequestsNavigation
+export default QAEmployeeNavigation
 
 const styles = StyleSheet.create({})
