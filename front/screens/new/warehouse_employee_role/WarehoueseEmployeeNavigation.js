@@ -7,15 +7,17 @@ import RequestsListScreen from './maintainance_request/RequestsListScreen'
 import ToolTypeNavigation from './tool_type/ToolTypeNavigation'
 import ToolkitListScreen from './toolkit/ToolkitListScreen'
 import ToolkitTypeNavigation from './toolkit_type/ToolkitTypeNavigation'
+import ToolkitNavigation from './toolkit/ToolkitNavigation'
+import ServiceRequestsNavigation from './maintainance_request/RequestsNavigation'
 
 export const WarehouseEmployeeRoleDrawer = createDrawerNavigator()
 
 const WarehoueseEmployeeNavigation = () => {
     return (
-        <WarehouseEmployeeRoleDrawer.Navigator initialRouteName={AIRCRAFT_ROUTE}>
+        <WarehouseEmployeeRoleDrawer.Navigator initialRouteName={REQUESTS_ROUTE}>
             <WarehouseEmployeeRoleDrawer.Screen
                 name={REQUESTS_ROUTE}
-                component={RequestsListScreen}
+                component={ServiceRequestsNavigation}
                 options={{
                     headerStyle: headerStyle,
                     headerRight: headerRight,
@@ -34,7 +36,7 @@ const WarehoueseEmployeeNavigation = () => {
             />
             <WarehouseEmployeeRoleDrawer.Screen
                 name={TOOLKIT_ROUTE}
-                component={ToolkitListScreen}
+                component={ToolkitNavigation}
                 options={{
                     headerStyle: headerStyle,
                     headerRight: headerRight,

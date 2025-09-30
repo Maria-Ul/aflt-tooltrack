@@ -40,7 +40,7 @@ async def get_all_users(
     - Доступно только администраторам
     """
     # Проверка прав доступа (только администратор может видеть всех пользователей)
-    if current_user.role != models.Role.ADMINISTRATOR:
+    if current_user.role == models.Role.ADMINISTRATOR:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"

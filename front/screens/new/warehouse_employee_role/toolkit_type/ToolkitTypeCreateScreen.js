@@ -4,12 +4,16 @@ import { Accordion, AccordionContent, AccordionContentText, AccordionHeader, Acc
 import { Text } from '@gluestack-ui/themed'
 import { getToolTypeTree } from '../../../../api/new/tool_types/get_tool_type_tree'
 import { Folder, FolderOpen, MinusIcon, Wrench } from 'lucide-react-native'
+import { createToolkitTypeRequest } from '../../../../api/new/tool_set_types/create_tool_set_type'
+import { editToolkitTypeRequest } from '../../../../api/new/tool_set_types/edit_tool_set_type'
 
-const ToolkitTypeCreateScreen = ({ navigation }) => {
+const ToolkitTypeCreateScreen = ({ route, navigation }) => {
   var [toolkitTypeName, setToolkitTypeName] = useState("")
   var [toolkitTypeDescription, setToolkitTypeDescription] = useState("")
   var [toolTypeTree, setToolTypeTree] = useState([])
   var [addedItemsIds, setAddedItemsIds] = useState([])
+
+  const { toolkitType } = route.params
 
   const loadToolTypeTree = () => {
     getToolTypeTree({
@@ -20,11 +24,39 @@ const ToolkitTypeCreateScreen = ({ navigation }) => {
   }
 
   useEffect(() => {
+    if (toolkitType != null) {
+      setToolkitTypeName(toolkitType.name)
+      setToolkitTypeDescription(toolkitType.description)
+      setAddedItemsIds(toolkitType.tool_type_ids)
+    }
     loadToolTypeTree()
   }, [])
 
   const onAddToolkitType = () => {
-
+    if (toolkitType == null) {
+      createToolkitTypeRequest(
+        {
+          name: toolkitTypeName,
+          description: toolkitTypeDescription,
+          toolTypeIds: addedItemsIds,
+          onSuccess: () => {
+            navigation.goBack()
+          }
+        }
+      )
+    } else {
+      editToolkitTypeRequest(
+        {
+          id: toolkitType.id,
+          name: toolkitTypeName,
+          description: toolkitTypeDescription,
+          toolTypeIds: addedItemsIds,
+          onSuccess: () => {
+            navigation.goBack()
+          }
+        }
+      )
+    }
   }
 
   const onAddTool = (toolTypeId) => {
@@ -72,7 +104,10 @@ const ToolkitTypeCreateScreen = ({ navigation }) => {
                   </Input>
                 </VStack>
                 <Button action='positive' onPress={onAddToolkitType}>
-                  <ButtonText>Добавить тип набора</ButtonText>
+
+                  <ButtonText>{
+                    toolkitType != null ? "Изменить тип набора" : "Добавить тип набора" 
+                  }</ButtonText>
                 </Button>
               </VStack>
               <Divider orientation='vertical' />
@@ -143,15 +178,15 @@ const ToolTypePickerItem = ({
           <Icon as={Wrench} mr="$3" />
           <Text>{data.name}</Text>
         </HStack>
-        <HStack>
-          <Button action='positive' onPress={onAddTool.bind(null, data.id)}>
+        <HStack alignItems='center'>
+          <Button action='positive' onPress={onAddTool.bind(null, data.id)} mr="$3">
             <Icon as={AddIcon} color="white" />
           </Button>
           {toolsCount == 0 ?
             <></>
             :
-            <HStack space='$3'>
-              <Text>{toolsCount}</Text>
+            <HStack alignItems='center'>
+              <Text mr="$3">{toolsCount}</Text>
               <Button action='negative' onPress={onRemoveTool.bind(null, data.id)}>
                 <Icon as={MinusIcon} color="white" />
               </Button>

@@ -8,6 +8,10 @@ const EmployeeNumberScreen = ({ navigation }) => {
   var [tabNum, setTabNum] = useState("")
   var [isNextEnabled, setIsNextEnabled] = useState(false)
 
+  const loadRequestByWorkerTabNum = (tabNumber) => {
+    
+  }
+
   const onContinue = () => {
       navigation.navigate(TOOLS_SCANNER_ROUTE)
   } 

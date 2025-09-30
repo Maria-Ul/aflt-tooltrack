@@ -25,6 +25,17 @@ import { deleteToolTypeRequest } from '../../../../api/new/tool_types/delete_too
 import { CrossIcon, Folder, FolderOpen, FolderPlus, PlusIcon, Wrench, X } from 'lucide-react-native'
 
 const ToolTypeCreateScreen = ({ navigation }) => {
+    var [cvClassesList, setCvClassesList] = useState(["bokorezy",
+        "key_rozgkovy_nakidnoy_3_4",
+        "kolovorot",
+        "otkryvashka_oil_can",
+        "otvertka_minus",
+        "otvertka_offset_cross",
+        "otvertka_plus",
+        "passatigi",
+        "passatigi_controvochny",
+        "razvodnoy_key",
+        "sharnitsa"])
     var [toolTypeTree, setToolTypeTree] = useState(null)
     var [searchResult, setSearchResult] = useState(null)
     var [searchQuery, setSearchQuery] = useState("")
@@ -152,6 +163,7 @@ const ToolTypeCreateScreen = ({ navigation }) => {
                 </Card>
             </Center>
             <ToolTypeNameInputModal
+                classesList={cvClassesList}
                 isOpen={isOpenNameInputModal}
                 isCategory={isCategoryModal}
                 onClose={onCloseModal}
@@ -169,13 +181,12 @@ const ToolTypeCreateItem = ({ data, onDeleteItem }) => {
                     <Icon as={Wrench} mr="$3" />
                     <Text>{data.name}</Text>
                 </HStack>
-                <Button onPress={onDeleteItem.bind(null, data.id)}>
-                    <Icon as={TrashIcon} color="white" />
+                <Button action="negative" onPress={onDeleteItem.bind(null, data.id)}>
+                    <Icon as={X} color="white" />
                 </Button>
             </HStack>
             <Divider />
         </VStack>
-
     )
 }
 

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { ButtonText, Card, Heading, HStack, ScrollView, Text, Button, Center, Icon, AddIcon, EditIcon, VStack, Divider, Box, Input, InputField, InputSlot, InputIcon, SearchIcon } from '@gluestack-ui/themed'
 import { AIRCRAFT_CREATE_ROUTE } from '../../Screens'
 import { getAllAircraftsRequest } from '../../../../api/new/aircraft/get_all_aircrafts'
+import { Plane } from 'lucide-react-native'
 
 const AircraftListScreen = ({ navigation }) => {
   var [aircraftsList, setAircraftsList] = useState(null)
@@ -80,6 +81,7 @@ const AircraftListItem = ({ data, onCreateRequest, onEdit }) => {
       <HStack>
         <Box h="$20" w="$5" bgColor="blue" />
         <VStack pl="$5">
+          <Icon as={Plane}/>
           <Text bold={true} size='lg' >{data.tail_number}</Text>
           <Text size='md'>{data.model}</Text>
         </VStack>

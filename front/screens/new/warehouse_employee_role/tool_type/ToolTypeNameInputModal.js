@@ -1,8 +1,9 @@
-import { Button, ButtonText, Center, CloseIcon, Heading, HStack, Icon, Input, InputField, Modal, ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, VStack } from "@gluestack-ui/themed"
+import { Button, ButtonText, Center, ChevronDownIcon, CloseIcon, Heading, HStack, Icon, Input, InputField, Modal, ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, Select, SelectBackdrop, SelectContent, SelectDragIndicator, SelectDragIndicatorWrapper, SelectIcon, SelectInput, SelectItem, SelectPortal, SelectTrigger, VStack } from "@gluestack-ui/themed"
 import { useRef, useState } from "react"
 import React from 'react'
 
 const ToolTypeNameInputModal = ({
+    classesList,
     isOpen,
     isCategory,
     onClose,
@@ -10,6 +11,10 @@ const ToolTypeNameInputModal = ({
 }) => {
     const [nameInput, setNameInput] = useState("")
 
+    const selectorItems = classesList.map(c => {
+        return (<SelectItem label={c} value={c} />)
+    })
+    console.log(selectorItems)
     const ref = useRef(null)
 
     return (
@@ -35,11 +40,36 @@ const ToolTypeNameInputModal = ({
                 </ModalHeader>
                 <ModalBody>
                     <VStack space="md">
-                        <Center>
-                            <Input>
-                                <InputField value={nameInput} onChangeText={setNameInput} placeholder="Введите наименование" />
-                            </Input>
-                        </Center>
+                        <Input>
+                            <InputField width="500px" value={nameInput} onChangeText={setNameInput} placeholder="Введите наименование" />
+                        </Input>
+                        {
+                            !isCategory ? <Select>
+                                <SelectTrigger size="md">
+                                    <SelectInput width="500px" placeholder="Выберите распознаваемый класс инструмента" />
+                                    <SelectIcon className="mr-3" as={ChevronDownIcon} />
+                                </SelectTrigger>
+                                <SelectPortal>
+                                    <SelectBackdrop />
+                                    <SelectContent>
+                                        <SelectDragIndicatorWrapper>
+                                            <SelectDragIndicator />
+                                        </SelectDragIndicatorWrapper>
+                                        {selectorItems}
+                                        {/* <SelectItem label="UX Research" value="ux" />
+                                        <SelectItem label="Web Development" value="web" />
+                                        <SelectItem
+                                            label="Cross Platform Development Process"
+                                            value="Cross Platform Development Process"
+                                        />
+                                        <SelectItem label="UI Designing" value="ui" isDisabled={true} />
+                                        <SelectItem label="Backend Development" value="backend" /> */}
+                                    </SelectContent>
+                                </SelectPortal>
+                            </Select>
+                                : <></>
+                        }
+
                     </VStack>
                 </ModalBody>
                 <ModalFooter>

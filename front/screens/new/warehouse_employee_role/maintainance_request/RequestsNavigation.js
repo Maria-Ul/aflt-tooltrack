@@ -4,30 +4,28 @@ import { REQUEST_CREATE_ROUTE, REQUEST_DETAILS_ROUTE, REQUESTS_LIST_ROUTE } from
 import CreateRequestScreen from './CreateRequestScreen'
 import RequestDetailsScreen from './RequestDetailsScreen'
 import RequestsListScreen from './RequestsListScreen'
-import { INCIDENT_DETAILS_ROUTE, INCIDENT_LIST_ROUTE } from '../Screens'
-import IncidentsListScreen from './IncidentListScreen'
 
-export const QAEmployeeStack = createNativeStackNavigator()
+export const ServiceRequestsStack = createNativeStackNavigator()
 
-const QAEmployeeNavigation = () => {
+const ServiceRequestsNavigation = () => {
     return (
-        <QAEmployeeStack.Navigator initialRouteName={INCIDENT_LIST_ROUTE}>
-            <QAEmployeeStack.Screen
-                name={INCIDENT_LIST_ROUTE}
-                component={IncidentsListScreen}
+        <ServiceRequestsStack.Navigator initialRouteName={REQUESTS_LIST_ROUTE}>
+            <ServiceRequestsStack.Screen
+                name={REQUESTS_LIST_ROUTE}
+                component={RequestsListScreen}
                 options={{headerShown: false}}
             />
-            <QAEmployeeStack.Screen
+            <ServiceRequestsStack.Screen
                 name={REQUEST_CREATE_ROUTE}
                 component={CreateRequestScreen}
                 options={{headerShown: false}}
             />
-            <QAEmployeeStack.Screen
-                name={INCIDENT_DETAILS_ROUTE}
-                component={Incide}
+            <ServiceRequestsStack.Screen
+                name={REQUEST_DETAILS_ROUTE}
+                component={RequestDetailsScreen}
                 options={{headerShown: false}}
             />
-        </QAEmployeeStack.Navigator>
+        </ServiceRequestsStack.Navigator>
     )
 }
 

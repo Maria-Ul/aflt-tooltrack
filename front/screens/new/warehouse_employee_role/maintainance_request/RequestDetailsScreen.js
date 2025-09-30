@@ -11,7 +11,7 @@ import { SelectBackdrop } from '@gluestack-ui/themed'
 import { SelectDragIndicatorWrapper } from '@gluestack-ui/themed'
 import { getRequestWithRelations } from '../../../../api/new/service_request/get_request_with_relations'
 
-const IncidentDetailsScreen = ({ route, navigation }) => {
+const RequestDetailsScreen = ({ route, navigation }) => {
     const { requestId } = route.params
 
     var [requestWithRelations, setRequestWithRelations] = useState(null)
@@ -79,6 +79,6 @@ const IncidentDetailsScreen = ({ route, navigation }) => {
         </Center>
     )
 }
-export default IncidentDetailsScreen
+export default RequestDetailsScreen
 
 const styles = StyleSheet.create({})
