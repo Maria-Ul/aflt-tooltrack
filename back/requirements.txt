@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+psycopg2-binary
+sqlalchemy
+pika
+python-dotenv
+databases
+asyncpg
+bcrypt
+alembic
+python-jose[cryptography]
+passlib[bcrypt]
+jwt
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+httpx>=0.24.0

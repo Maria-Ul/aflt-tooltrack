@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    env_file:
+      - .env
+
+  rabbitmq:
+    image: rabbitmq:3.9-management-alpine
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq//
+    env_file:
+      - .env
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/back/Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - ./back:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq//
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/front/Dockerfile
+    volumes:
+      - ./front:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      REACT_APP_API_URL: ${BACKEND_URL}
+    env_file:
+      - .env
+
+volumes:
+  db_data:
