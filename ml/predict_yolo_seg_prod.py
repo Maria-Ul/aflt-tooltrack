@@ -2,7 +2,7 @@ from pathlib import Path
 import gc
 import torch
 from ultralytics import YOLO
-import cv2
+
 
 def free_memory():
         gc.collect()
@@ -13,12 +13,13 @@ def free_memory():
 class SegmentModel():
     def __init__(self, 
                  model_path = 'ml/weights/yolo11s-seg-tools.onnx',
+                 conf_threshold = 0.5
                  ):
         self.model_path = model_path
 
 
         self.imgsz = 640
-        self.conf_threshold = 0.5
+        self.conf_threshold = conf_threshold
 
         self.load_model()
 
@@ -58,7 +59,7 @@ class SegmentModel():
 
 if __name__=="__main__":
     img_path = "data/Групповые/DSCN4946.JPG"
-    model = SegmentModel()
+    model = SegmentModel(conf_threshold = 0.5)
     model.predict_image(img_path)
 
     probs = model.get_probs() # (n predicted objects, )
