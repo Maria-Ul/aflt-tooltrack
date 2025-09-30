@@ -5,7 +5,7 @@ from craft_detector import CraftDetector
 
 
 if __name__ == '__main__':
-    img_dir ='./otvertki'
+    img_dir ='./imgs'
     bboxes_dir = './results'
     os.makedirs(bboxes_dir, exist_ok=True)
 

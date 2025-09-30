@@ -14,8 +14,6 @@ from craft_text_detector import (
 )
 
 
-
-
 def preprocess_image_for_engraving(image, save_intermediate=False) -> np.ndarray:
     img = image
     
