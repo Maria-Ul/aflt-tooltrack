@@ -34,17 +34,8 @@ async def get_all_users(
     """
     Получение списка всех пользователей.
     
-    **Требуемые права:** ADMINISTRATOR
     
     - Возвращает полный список пользователей системы
-    - Доступно только администраторам
     """
-    # Проверка прав доступа (только администратор может видеть всех пользователей)
-    if current_user.role != models.Role.ADMINISTRATOR | current_user.role != models.Role.WAREHOUSE_EMPLOYEE:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough permissions"
-        )
-    
     users = db.query(models.User).all()
     return users
