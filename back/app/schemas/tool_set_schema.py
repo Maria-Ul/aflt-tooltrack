@@ -22,6 +22,7 @@ class ToolSetTypeBase(BaseModel):
 
 class ToolSetType(ToolSetTypeBase):
     id: int = Field(..., example=1, description="ID типа набора инструментов")
+    tool_types: List[ToolType] = Field(default=[], description="Подробная информация о инструментах в наборе")
     
     class Config:
         orm_mode = True
