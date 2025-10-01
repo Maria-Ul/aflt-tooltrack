@@ -8,7 +8,9 @@ FULL_PREFIX_MAIN = "AT-288293-"     # то, что мы достраиваем �
 OIL_CAN = "AT-389759"
 
 # Регулярки для поиска OCR-хвостов
-pattern_main = re.compile(r'(?:AT-)?(?:288293-\d|88293-\d|8293-\d|293-\d|93-\d)')
+pattern_main = re.compile(
+    r'(?:AT-)?(?:288293-\d{1,2}|88293-\d{1,2}|8293-\d{1,2}|293-\d{1,2}|93-\d{1,2})'
+)
 pattern_oil  = re.compile(r'(?:AT-)?(?:389759|89759|9759|759)')
 
 def reconstruct(text):
@@ -27,10 +29,7 @@ def reconstruct(text):
         if tail.startswith("AT-"):
             return OIL_CAN   # уже готовый номер
         # достраиваем
-        return "AT-" + "389759"[-len(tail):].replace("389759", "389759") if False else OIL_CAN
-        # упрощённо: если совпал хвост — возвращаем полный OIL_CAN
-        return OIL_CAN
-    
+        return "AT-" + "389759"[-len(tail):].replace("389759", "389759") if False else OIL_CAN    
     return None
 
 
@@ -82,7 +81,9 @@ if __name__=='__main__':
             rec_texts = res['rec_texts']
             boxes = res['rec_polys']
             for t, b in zip(rec_texts, boxes):
+                print(t)
                 reconstructed_text = reconstruct(t)
+                print(reconstructed_text)
                 if reconstructed_text is not None:
                     text_list.append(reconstructed_text)
                     boxes_list.append(b)
