@@ -36,14 +36,15 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     const [width, setWidth] = useState(0)
     const [height, setHeight] = useState(0)
 
-    const [isShowMessAlert, setIsShowMessAlert] = useState(true)
+    const [isShowMessAlert, setIsShowMessAlert] = useState(false)
 
     const [boxes, setBoxes] = useState([])
 
     const [paths, setPaths] = useState([])
 
     useEffect(() => {
-        setPaths(boxes.map(p => `${p.x1 * width},${p.y1 * height} ${p.x2 * width},${p.y2 * height} ${p.x3 * width},${p.y3 * height} ${p.x4 * width},${p.y4 * height} ${p.x1 * width},${p.y1 * height}`))
+        setPaths(boxes.map(
+            p => `${p.x1 * width},${p.y1 * height} ${p.x2 * width},${p.y2 * height} ${p.x3 * width},${p.y3 * height} ${p.x4 * width},${p.y4 * height} ${p.x1 * width},${p.y1 * height} ${p.x2 * width},${p.y2 * height}`))
     }, [boxes, width, height])
 
     const [permission, requestPermission] = useCameraPermissions()
@@ -133,14 +134,14 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             nBoxes.forEach((b, index, a) => {
                 const classNum = nBoxes[index][0]
                 oBoxes.push({
-                    x1: nBoxes[index][1] / 640,
-                    y1: nBoxes[index][2] / 640,
-                    x2: nBoxes[index][3] / 640,
-                    y2: nBoxes[index][4] / 640,
-                    x3: nBoxes[index][5] / 640,
-                    y3: nBoxes[index][6] / 640,
-                    x4: nBoxes[index][7] / 640,
-                    y5: nBoxes[index][8] / 640,
+                    x1: 1-nBoxes[index][1],
+                    y1: nBoxes[index][2],
+                    x2: 1-nBoxes[index][3],
+                    y2: nBoxes[index][4],
+                    x3: 1-nBoxes[index][5],
+                    y3: nBoxes[index][6],
+                    x4: 1-nBoxes[index][7],
+                    y4: nBoxes[index][8],
                 }
                 )
             })
@@ -246,7 +247,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             //top: '$10',
                             //left: '$10',
                             //backgroundColor: "red"
-                        }} //viewBox={`0 0 1000 1000`}
+                        }} viewBox={`0 0 ${width} ${height}`}
                             height={`${height}px`}
                             width={`${width}px`}
                         >
