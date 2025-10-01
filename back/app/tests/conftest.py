@@ -112,7 +112,8 @@ def test_tool_type_item(db_session, test_tool_type_category):
     item = ToolType(
         name="Тестовый инструмент",
         category_id=test_tool_type_category.id,
-        is_item=True
+        is_item=True,
+        tool_class="OTVERTKA_PLUS"
     )
     db_session.add(item)
     db_session.commit()
@@ -135,7 +136,12 @@ def test_tool_type_hierarchy(db_session):
     db_session.refresh(subcategory)
     
     # Инструмент
-    tool = ToolType(name="Инструмент", category_id=subcategory.id, is_item=True)
+    tool = ToolType(
+        name="Инструмент",
+        category_id=subcategory.id,
+        is_item=True,
+        tool_class="OTVERTKA_PLUS"
+    )
     db_session.add(tool)
     db_session.commit()
     db_session.refresh(tool)
@@ -155,7 +161,8 @@ def test_tool_set_type_with_tools(db_session):
         tool_type = ToolType(
             name=f"Инструмент {i}",
             category_id=None,
-            is_item=True
+            is_item=True,
+            tool_class="OTVERTKA_PLUS"
         )
         db_session.add(tool_type)
         tool_types.append(tool_type)
@@ -190,19 +197,6 @@ def test_tool_set_type_with_tool_set(db_session, test_tool_set_type):
     db_session.commit()
     db_session.refresh(tool_set)
     return test_tool_set_type
-
-@pytest.fixture
-def test_tool_type_item(db_session):
-    """Создает тестовый инструмент"""
-    tool_type = ToolType(
-        name="Тестовый инструмент для наборов",
-        category_id=None,
-        is_item=True
-    )
-    db_session.add(tool_type)
-    db_session.commit()
-    db_session.refresh(tool_type)
-    return tool_type
 
 
 @pytest.fixture
@@ -271,7 +265,8 @@ def test_tool_set_type(db_session):
         tool_type = ToolType(
             name=f"Тестовый инструмент {i}",
             category_id=None,
-            is_item=True
+            is_item=True,
+            tool_class="OTVERTKA_PLUS"
         )
         db_session.add(tool_type)
         tool_types.append(tool_type)
@@ -445,3 +440,18 @@ def test_incident_with_relations(db_session, test_maintenance_request_with_relat
     db_session.commit()
     db_session.refresh(incident)
     return incident
+
+@pytest.fixture
+def test_tool_type_with_class(db_session, test_tool_type_category):
+    """Создает тестовый инструмент с классом"""
+    tool_type = ToolType(
+        name="Тестовый инструмент с классом",
+        category_id=test_tool_type_category.id,
+        is_item=True,
+        tool_class="OTVERTKA_PLUS"
+    )
+    db_session.add(tool_type)
+    db_session.commit()
+    db_session.refresh(tool_type)
+
+    return tool_type

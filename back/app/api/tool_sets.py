@@ -197,6 +197,14 @@ def get_tool_set_with_type(
     # Создаем ответ вручную, чтобы избежать проблем с рекурсивными схемами
     response_data = tool_set_data.dict()
     response_data["tool_set_type"] = tool_set_type_data.dict() if tool_set_type_data else None
+    # Получаем детальную информацию об инструментах
+    tool_types = []
+    if tool_set.tool_set_type.tool_type_ids:
+        tool_types = db.query(models.ToolType).filter(
+            models.ToolType.id.in_(tool_set.tool_set_type.tool_type_ids)
+        ).all()
+    
+    response_data["tool_set_type"]['tool_types']=tool_types
     
     return response_data
 
