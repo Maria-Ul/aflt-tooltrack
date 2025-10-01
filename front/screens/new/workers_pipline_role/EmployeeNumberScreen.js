@@ -31,7 +31,8 @@ const EmployeeNumberScreen = ({ navigation }) => {
       workerId: workerId,
       onSuccess: (serviceRequestsList) => {
         console.log("GET_ALL_REQUESTS", serviceRequestsList)
-        var requestInProgerss = serviceRequestsList.find(r => r.status == REQUEST_IN_PROGRESS)
+        var requestInProgerss = serviceRequestsList.find(r => r.status != "")//== REQUEST_IN_PROGRESS)
+        console.log("ONE_REQUEST", requestInProgerss)
         if (requestInProgerss != null) {
           getRequestWithRelations({
             request_id: requestInProgerss.id,

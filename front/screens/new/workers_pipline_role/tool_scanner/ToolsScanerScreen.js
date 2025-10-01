@@ -38,27 +38,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const [isShowMessAlert, setIsShowMessAlert] = useState(true)
 
-    const [boxes, setBoxes] = useState([
-        {
-            x1: 0.1,
-            y1: 0.1,
-            x2: 0.8,
-            y2: 0.2,
-            x3: 0.6,
-            y3: 0.5,
-            x4: 0.05,
-            y4: 0.7,
-        },
-        {
-            x1: 0.05,
-            y1: 0.05,
-            x2: 0.75,
-            y2: 0.15,
-            x3: 0.55,
-            y3: 0.45,
-            x4: 0.00,
-            y4: 0.65,
-        }])
+    const [boxes, setBoxes] = useState([])
 
     const [paths, setPaths] = useState([])
 
@@ -96,7 +76,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
-        streamIntervalRef.current = setInterval(captureFrame, 500); // 5 FPS
+        streamIntervalRef.current = setInterval(captureFrame, 1000); // 5 FPS
     }, [captureFrame])
 
     const stopStream = () => {
@@ -116,12 +96,64 @@ const ToolsScanerScreen = ({ route, navigation }) => {
         var file = await getDocumentAsync({ type: 'application/zip' })
         console.log(file.assets[0])
     }
+    //             {
+    //     "classes": [
+    //         "KEY_ROZGKOVY_NAKIDNOY_3_4"
+    //     ],
+    //     "fps": 1.46137537072815,
+    //     "frame_number": 55,
+    //     "masks": [],
+    //     "obb_rows": [
+    //         [
+    //             1,
+    //             192,
+    //             385,
+    //             384,
+    //             342,
+    //             397,
+    //             400,
+    //             205,
+    //             443
+    //         ]
+    //     ],
+    //     "probs": [
+    //         0.537562251091003
+    //     ],
+    //     "timestamp": 1759332023.89741,
+    //     "type": "frame_received"
+    // }
+    const onDetectionEvent = (event) => {
+        const nBoxes = event.obb_rows
+        const classes = event.classes
+        const probs = event.probs
+        console.log(event)
+        if (nBoxes != null) {
+            //console.log(nBoxes)
+            var oBoxes = []
+            nBoxes.forEach((b, index, a) => {
+                const classNum = nBoxes[index][0]
+                oBoxes.push({
+                    x1: nBoxes[index][1] / 640,
+                    y1: nBoxes[index][2] / 640,
+                    x2: nBoxes[index][3] / 640,
+                    y2: nBoxes[index][4] / 640,
+                    x3: nBoxes[index][5] / 640,
+                    y3: nBoxes[index][6] / 640,
+                    x4: nBoxes[index][7] / 640,
+                    y5: nBoxes[index][8] / 640,
+                }
+                )
+            })
+            console.log(oBoxes)
+            setBoxes(oBoxes)
+        }
+    }
 
     useEffect(() => {
         console.log("USE_EFFECT")
         socketRef.current = new WebSocket("ws://localhost:8000/api/ws/video") //io("ws://localhost:8000/ws/video")
         socketRef.current.onmessage = (event) => {
-            //console.log(event)
+            onDetectionEvent(JSON.parse(event.data))
         }
         return () => {
             if (socketRef.current) {
