@@ -25,17 +25,18 @@ import { deleteToolTypeRequest } from '../../../../api/new/tool_types/delete_too
 import { CrossIcon, Folder, FolderOpen, FolderPlus, PlusIcon, Wrench, X } from 'lucide-react-native'
 
 const ToolTypeCreateScreen = ({ navigation }) => {
-    var [cvClassesList, setCvClassesList] = useState(["bokorezy",
-        "key_rozgkovy_nakidnoy_3_4",
-        "kolovorot",
-        "otkryvashka_oil_can",
-        "otvertka_minus",
-        "otvertka_offset_cross",
-        "otvertka_plus",
-        "passatigi",
-        "passatigi_controvochny",
-        "razvodnoy_key",
-        "sharnitsa"])
+    var [cvClassesList, setCvClassesList] = useState([
+        "PASSATIGI",
+        "OTKRYVASHKA_OIL_CAN",
+        "BOKOREZY",
+        "SHARNITSA",
+        "KOLOVOROT",
+        "RAZVODNOY_KEY",
+        "PASSATIGI_CONTROVOCHNY",
+        "KEY_ROZGKOVY_NAKIDNOY_3_4",
+        "OTVERTKA_PLUS",
+        "OTVERTKA_MINUS",
+        "OTVERTKA_OFFSET_CROSS"])
     var [toolTypeTree, setToolTypeTree] = useState(null)
     var [searchResult, setSearchResult] = useState(null)
     var [searchQuery, setSearchQuery] = useState("")
