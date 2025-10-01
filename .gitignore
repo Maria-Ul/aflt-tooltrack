@@ -222,3 +222,5 @@ test_rect.png
 train_yolo_seg.py
 validate_yolo_seg.py
 yolo11s-seg.pt
+
+back/app/ml/img/output.jpg
