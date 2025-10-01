@@ -7,14 +7,10 @@ from ultralytics import YOLO
 
 import cv2
 import numpy as np
-<<<<<<< HEAD
 # import math
 
 from paddleocr import PaddleOCR
 import re
-=======
-import math
->>>>>>> f39396a (added vizualization OBB to class)
 
 def free_memory():
     gc.collect()
@@ -517,7 +513,6 @@ class SegmentModel:
         return (int(out[0]), int(out[1]), int(out[2]))
 
 
-<<<<<<< HEAD
 def order_points(pts):
     # pts: numpy array shape (4,2)
     rect = np.zeros((4, 2), dtype="float32")
@@ -621,8 +616,6 @@ def get_prediction_results(model, ocr_model, img_path):
 
     return classes, obb_rows, masks, obb_texts
 
-=======
->>>>>>> f39396a (added vizualization OBB to class)
 
 if __name__ == "__main__":
     img_path = "imgs/DSCN0472.JPG"
@@ -633,34 +626,8 @@ if __name__ == "__main__":
         prefer="auto",   #  "onnx-gpu" | "openvino" | "torch"
         verbose=True
     )
-<<<<<<< HEAD
     ocr_model = PaddleOCR(
         use_doc_orientation_classify=True, 
         use_doc_unwarping=True, 
         use_textline_orientation=True)
     classes, obb_rows, masks, obb_texts = get_prediction_results(model, ocr_model, img_path)
-=======
-
-    r = model.predict_image(img_path)
-
-    # OBB в формате [class_index, x1, y1, x2, y2, x3, y3, x4, y4]
-    obb_rows = model.get_oriented_bboxes(normalized=True)
-    
-    out_img = model.visualize_oriented_bboxes(
-        save_path="obb_vis_DSCN4946.png",
-        show=False,           
-        line_thickness=20,
-        text_scale=5,
-        text_thickness=20,
-        text_bg_alpha=1.0,
-        mask_fill_lighter=False, 
-        mask_alpha=0.35
-    )
-
-    probs = model.get_probs()
-    boxes = model.get_axis_aligned_boxes()
-    masks = model.get_masks()
-
-    print("backend:", model.backend)
-    print("n dets:", 0 if probs is None else len(probs))
->>>>>>> f39396a (added vizualization OBB to class)
