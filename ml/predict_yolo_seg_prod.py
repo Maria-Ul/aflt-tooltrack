@@ -18,13 +18,7 @@ def _onnx_gpu_available():
     try:
         import onnxruntime as ort
         providers = ort.get_available_providers()
-        # Для ARM используем CPU провайдер
-        if "CUDAExecutionProvider" in providers:
-            return True
-        # Проверяем доступность других GPU провайдеров для ARM
-        if "CoreMLExecutionProvider" in providers:
-            return True
-        return False
+        return "CUDAExecutionProvider" in providers
     except Exception:
         return False
 
@@ -48,7 +42,7 @@ class SegmentModel:
 
     def __init__(
         self,
-        model_path="weights/yolo11s-seg-tools.pt",
+        model_path="ml/weights/yolo11s-seg-tools.pt",
         conf_threshold=0.5,
         imgsz=640,
         prefer="auto",  # "auto" | "onnx-gpu" | "openvino" | "torch"
@@ -206,18 +200,9 @@ class SegmentModel:
 
 
 if __name__ == "__main__":
-    # Используем абсолютные пути для теста
-    script_dir = Path(__file__).parent.absolute()
-    img_path = script_dir / "data/DSCN4950.JPG"
-    model_path = script_dir / "weights/yolo11s-seg-tools.pt"
-    
-    print(f"Проверка пути к модели: {model_path}")
-    print(f"Файл модели существует: {model_path.exists()}")
-    print(f"Проверка пути к изображению: {img_path}")
-    print(f"Файл изображения существует: {img_path.exists()}")
-
+    img_path = "data/Групповые/DSCN4946.JPG"
     model = SegmentModel(
-        model_path=model_path,
+        model_path="ml/weights/yolo11s-seg-tools.pt",
         conf_threshold=0.5,
         imgsz=640,
         prefer="auto",   #  "onnx-gpu" | "openvino" | "torch"
