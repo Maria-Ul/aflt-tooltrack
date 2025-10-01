@@ -8,6 +8,7 @@ import Svg, { Polyline } from 'react-native-svg'
 import { getToolkitWithTools } from '../../../../api/new/tool_sets/get_tool_set_with_tools'
 import ResultModal from './ResultModal'
 import ToolItem from './ToolItem'
+import { BACKEND_URL, WEB_SOCKET_URL } from '../../../../api/baseApi'
 
 // использовать Grid
 const ToolsScanerScreen = ({ route, navigation }) => {
@@ -134,13 +135,13 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             nBoxes.forEach((b, index, a) => {
                 const classNum = nBoxes[index][0]
                 oBoxes.push({
-                    x1: 1-nBoxes[index][1],
+                    x1: 1 - nBoxes[index][1],
                     y1: nBoxes[index][2],
-                    x2: 1-nBoxes[index][3],
+                    x2: 1 - nBoxes[index][3],
                     y2: nBoxes[index][4],
-                    x3: 1-nBoxes[index][5],
+                    x3: 1 - nBoxes[index][5],
                     y3: nBoxes[index][6],
-                    x4: 1-nBoxes[index][7],
+                    x4: 1 - nBoxes[index][7],
                     y4: nBoxes[index][8],
                 }
                 )
@@ -152,134 +153,134 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         console.log("USE_EFFECT")
-        socketRef.current = new WebSocket("ws://localhost:8000/api/ws/video") //io("ws://localhost:8000/ws/video")
-        socketRef.current.onmessage = (event) => {
-            onDetectionEvent(JSON.parse(event.data))
-        }
-        return () => {
-            if (socketRef.current) {
-                //socketRef.current.disconnect();
-                socketRef.current.close()
-            }
-            if (streamIntervalRef.current) {
-                clearInterval(streamIntervalRef.current);
-            }
-            stopStream()
-        };
-    }, []);
-
-
-    if (!permission) { return <View /> }
-
-    if (!permission.granted) {
-        return (
-            <View style={styles.container} width='100%' height='100%'>
-                <Center p='$10'>
-                    <Card>
-                        <VStack p='$5'>
-                            <Text mb='$10' size='2xl' style={styles.message}>Необходимо разрешить доступ к камере</Text>
-                            <Button onPress={requestPermission} title="grant permission">
-                                <ButtonText>Разрешить</ButtonText>
-                            </Button>
-                        </VStack>
-                    </Card>
-                </Center>
-            </View>
-        );
+        socketRef.current = new WebSocket(WEB_SOCKET_URL+ "/api/ws/video") //io("ws://localhost:8000/ws/video")
+    socketRef.current.onmessage = (event) => {
+        onDetectionEvent(JSON.parse(event.data))
     }
+    return () => {
+        if (socketRef.current) {
+            //socketRef.current.disconnect();
+            socketRef.current.close()
+        }
+        if (streamIntervalRef.current) {
+            clearInterval(streamIntervalRef.current);
+        }
+        stopStream()
+    };
+}, []);
 
+
+if (!permission) { return <View /> }
+
+if (!permission.granted) {
     return (
-        <>
-            <HStack style={styles.container}>
-                <VStack style={styles.container_buttons} p='$1'>
-                    <Heading size='lg' m='$5'>Набор №12312312312</Heading>
-                    <Card>
-                        <VStack p='$5' mb='$9'>
-                            <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
+        <View style={styles.container} width='100%' height='100%'>
+            <Center p='$10'>
+                <Card>
+                    <VStack p='$5'>
+                        <Text mb='$10' size='2xl' style={styles.message}>Необходимо разрешить доступ к камере</Text>
+                        <Button onPress={requestPermission} title="grant permission">
+                            <ButtonText>Разрешить</ButtonText>
+                        </Button>
+                    </VStack>
+                </Card>
+            </Center>
+        </View>
+    );
+}
 
-                            <ToolItem
-                                name='Пассатижи'
-                                probability={0.7}
-                                threshold={0.98}
-                            />
-                            <ToolItem
-                                name='Отвертка крестовая. PH4'
-                                probability={0.99}
-                                threshold={0.98}
-                            />
+return (
+    <>
+        <HStack style={styles.container}>
+            <VStack style={styles.container_buttons} p='$1'>
+                <Heading size='lg' m='$5'>Набор №12312312312</Heading>
+                <Card>
+                    <VStack p='$5' mb='$9'>
+                        <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
 
-                            <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
-                                <ButtonText>Зафиксировать</ButtonText>
-                            </Button>
-                            <Button variant='outline' onPress={onUploadPhotoClick}>
-                                <ButtonText>Загрузить фото</ButtonText>
-                            </Button>
-                            <Button variant='outline' onPress={onUploadZipClick}>
-                                <ButtonText>Загрузить архив</ButtonText>
-                            </Button>
-                        </VStack>
-                    </Card>
-                </VStack>
-                <View p='$10'
-                    style={styles.container_camera}>
-                    <View onLayout={(event) => {
-                        const { x, y, width, height } = event.nativeEvent.layout
-                        setHeight(height)
-                        setWidth(width)
-                        console.log("SIZE:" + x + " " + y + " " + width + " " + height)
-                    }} style={styles.container_camera} >
-                        <CameraView
-                            mode='video'
-                            ratio='4:3'
-                            videoQuality='4:3'
-                            ref={cameraRef}
-                            style={styles.camera}
-                            onCameraReady={() => {
-                                console.log("READY")
-                                console.log(paths[0])
-                                launchStream()
-                            }}
+                        <ToolItem
+                            name='Пассатижи'
+                            probability={0.7}
+                            threshold={0.98}
                         />
-                        <Svg style={{
-                            elevation: 10,
-                            position: "absolute",
-                            zIndex: 1,
-                            //top: '$10',
-                            //left: '$10',
-                            //backgroundColor: "red"
-                        }} viewBox={`0 0 ${width} ${height}`}
-                            height={`${height}px`}
-                            width={`${width}px`}
-                        >
-                            {paths.map(p => {
-                                return (
-                                    <Polyline
-                                        points={p}
-                                        fill="#ff23234f"
-                                        stroke={"red"}
-                                        strokeWidth="2px"
-                                    />
-                                )
-                            })}
-                        </Svg>
-                        {isShowMessAlert ? <MessAlert
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                            }}
-                        /> : <></>}
-                    </View>
+                        <ToolItem
+                            name='Отвертка крестовая. PH4'
+                            probability={0.99}
+                            threshold={0.98}
+                        />
+
+                        <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
+                            <ButtonText>Зафиксировать</ButtonText>
+                        </Button>
+                        <Button variant='outline' onPress={onUploadPhotoClick}>
+                            <ButtonText>Загрузить фото</ButtonText>
+                        </Button>
+                        <Button variant='outline' onPress={onUploadZipClick}>
+                            <ButtonText>Загрузить архив</ButtonText>
+                        </Button>
+                    </VStack>
+                </Card>
+            </VStack>
+            <View p='$10'
+                style={styles.container_camera}>
+                <View onLayout={(event) => {
+                    const { x, y, width, height } = event.nativeEvent.layout
+                    setHeight(height)
+                    setWidth(width)
+                    console.log("SIZE:" + x + " " + y + " " + width + " " + height)
+                }} style={styles.container_camera} >
+                    <CameraView
+                        mode='video'
+                        ratio='4:3'
+                        videoQuality='4:3'
+                        ref={cameraRef}
+                        style={styles.camera}
+                        onCameraReady={() => {
+                            console.log("READY")
+                            console.log(paths[0])
+                            launchStream()
+                        }}
+                    />
+                    <Svg style={{
+                        elevation: 10,
+                        position: "absolute",
+                        zIndex: 1,
+                        //top: '$10',
+                        //left: '$10',
+                        //backgroundColor: "red"
+                    }} viewBox={`0 0 ${width} ${height}`}
+                        height={`${height}px`}
+                        width={`${width}px`}
+                    >
+                        {paths.map(p => {
+                            return (
+                                <Polyline
+                                    points={p}
+                                    fill="#ff23234f"
+                                    stroke={"red"}
+                                    strokeWidth="2px"
+                                />
+                            )
+                        })}
+                    </Svg>
+                    {isShowMessAlert ? <MessAlert
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                        }}
+                    /> : <></>}
                 </View>
-            </HStack >
-            <ResultModal
-                isOpen={isShowResultModal}
-                isSuccessScan={false}
-                onClose={setIsShowResultModal.bind(null, false)}
-                onContinueClick={setIsShowResultModal.bind(null, false)}
-            />
-        </>
-    )
+            </View>
+        </HStack >
+        <ResultModal
+            isOpen={isShowResultModal}
+            isSuccessScan={false}
+            onClose={setIsShowResultModal.bind(null, false)}
+            onContinueClick={setIsShowResultModal.bind(null, false)}
+        />
+    </>
+)
 }
 
 const MessAlert = ({ style }) => {
