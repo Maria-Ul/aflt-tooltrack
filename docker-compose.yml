@@ -36,6 +36,8 @@ services:
       context: .
       dockerfile: docker/front/Dockerfile
     restart: always
+    volumes:
+      - ./front:/app
     ports:
       - 80:8085
     depends_on:
