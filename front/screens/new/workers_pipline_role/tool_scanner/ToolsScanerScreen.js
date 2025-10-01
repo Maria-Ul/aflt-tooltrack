@@ -51,15 +51,15 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     }, [boxes, width, height])
 
     const [permission, requestPermission] = useCameraPermissions()
-    Alert.alert("Нет доступа к камере")
-    useEffect(() => {
-        if (!permission) {
+    //Alert.alert("Нет доступа к камере")
+    // useEffect(() => {
+    //     if (!permission) {
 
-        } else if (permission != null && !permission.granted) {
-            Alert.alert("Нет доступа к камере")
-            requestPermission()
-        }
-    }, [permission])
+    //     } else if (permission != null && !permission.granted) {
+    //         //Alert.alert("Нет доступа к камере")
+    //         //requestPermission()
+    //     }
+    // }, [permission])
 
     const captureFrame = useCallback(async () => {
         //console.log("CAPTURE" + cameraRef.current + "-" + isStreaming)
@@ -81,7 +81,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                 }`
                 //console.log(frameJs)
 
-                //socketRef.current.send(frameJs)
+                socketRef.current.send(frameJs)
             }
         } catch (error) {
             console.log('Ошибка захвата кадра:', error);
