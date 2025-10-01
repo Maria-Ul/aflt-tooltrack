@@ -6,7 +6,14 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any
 import uuid
-from app.ml.predict_yolo_seg_prod import SegmentModel, get_prediction_results
+from app.ml.predict_yolo_seg_prod import SegmentModel, get_prediction_results_with_img
+from datetime import datetime
+import zipfile
+import json
+import tempfile
+from fastapi.responses import Response
+import os
+from pathlib import Path
 
 router = APIRouter(prefix="/files", tags=["Загрузка файлов в модель"])
 
@@ -44,7 +51,7 @@ def process_single_image(image_path: str) -> Dict[str, Any]:
     )
     
     # Получаем предсказания
-    classes, obb_rows, masks, probs = get_prediction_results(model, image_path)
+    classes, obb_rows, masks, probs, img = get_prediction_results_with_img(model, image_path)
     
     # Конвертируем masks в JSON-сериализуемый формат
     serializable_masks = []
@@ -71,7 +78,7 @@ def process_single_image(image_path: str) -> Dict[str, Any]:
         'probs': serializable_probs,
         'masks': serializable_masks,
         'obb_rows': obb_rows,
-    }
+    }, img
 
 @router.post("/predict/single")
 async def predict_single_image(file: UploadFile = File(...)):
@@ -79,7 +86,7 @@ async def predict_single_image(file: UploadFile = File(...)):
     API для предсказания на одном изображении
     
     - Принимает: файл изображения (jpg, png, jpeg)
-    - Возвращает: результаты детекции
+    - Возвращает: ZIP архив с JSON результатами и изображением
     """
     # Проверяем тип файла
     allowed_extensions = {'.jpg', '.jpeg', '.png', '.bmp'}
@@ -92,26 +99,66 @@ async def predict_single_image(file: UploadFile = File(...)):
         )
     
     try:
-        # Создаем временный файл
+        # Создаем временный файл для загруженного изображения
         with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension) as temp_file:
-            # Читаем и сохраняем загруженный файл
             content = await file.read()
             temp_file.write(content)
             temp_file_path = temp_file.name
         
         # Обрабатываем изображение
-        result = process_single_image(temp_file_path)
+        json_data, img_path = process_single_image(temp_file_path)
         
-        # Очищаем временный файл
+        # Создаем временный ZIP архив
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as zip_temp:
+            zip_path = zip_temp.name
+        
+        # Создаем ZIP архив с результатами
+        with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            # Добавляем JSON файл с результатами
+            json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
+            zipf.writestr('prediction_results.json', json_str)
+            
+            # Добавляем обработанное изображение
+            if os.path.exists(img_path):
+                zipf.write(img_path, 'processed_image.jpg')
+            else:
+                # Если изображение не было сохранено, сохраняем оригинал
+                zipf.write(temp_file_path, 'original_image.jpg')
+        
+        # Читаем ZIP файл в память
+        with open(zip_path, 'rb') as f:
+            zip_data = f.read()
+        
+        # Очищаем временные файлы
         os.unlink(temp_file_path)
+        if os.path.exists(img_path) and img_path != temp_file_path:
+            os.unlink(img_path)
+        os.unlink(zip_path)
         
-        return JSONResponse(content=result)
+        # Возвращаем ZIP архив как ответ
+        return Response(
+            content=zip_data,
+            media_type='application/zip',
+            headers={
+                'Content-Disposition': f'attachment; filename="prediction_results_{Path(file.filename).stem}.zip"'
+            }
+        )
         
     except Exception as e:
-        # Очищаем временный файл в случае ошибки
-        if 'temp_file_path' in locals():
+        # Очищаем временные файлы в случае ошибки
+        if 'temp_file_path' in locals() and os.path.exists(temp_file_path):
             try:
                 os.unlink(temp_file_path)
+            except:
+                pass
+        if 'img_path' in locals() and os.path.exists(img_path) and img_path != temp_file_path:
+            try:
+                os.unlink(img_path)
+            except:
+                pass
+        if 'zip_path' in locals() and os.path.exists(zip_path):
+            try:
+                os.unlink(zip_path)
             except:
                 pass
                 
@@ -119,14 +166,13 @@ async def predict_single_image(file: UploadFile = File(...)):
             status_code=500, 
             detail=f"Ошибка обработки изображения: {str(e)}"
         )
-
 @router.post("/predict/batch")
 async def predict_batch_images(zip_file: UploadFile = File(...)):
     """
     API для пакетной обработки изображений из архива
     
     - Принимает: ZIP архив с изображениями
-    - Возвращает: массив результатов для каждого изображения
+    - Возвращает: ZIP архив с результатами (images/ и json/ папки)
     """
     if not zip_file.filename.endswith('.zip'):
         raise HTTPException(
@@ -162,33 +208,70 @@ async def predict_batch_images(zip_file: UploadFile = File(...)):
                     detail="В архиве не найдено поддерживаемых изображений"
                 )
             
-            # Обрабатываем каждое изображение
-            results = []
-            for image_file in image_files:
-                image_path = os.path.join(temp_dir, image_file)
-                
-                try:
-                    result = process_single_image(image_path)
-                    result['filename'] = image_file
-                    results.append(result)
-                except Exception as e:
-                    # Если ошибка на одном изображении, продолжаем с остальными
-                    results.append({
-                        'filename': image_file,
-                        'error': f"Ошибка обработки: {str(e)}",
-                        'classes': [],
-                        'probs': [],
-                        'masks': [],
-                        'obb_rows': [],
-                        'texts': []
-                    })
+            # Создаем временный ZIP архив для результатов
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as zip_temp:
+                results_zip_path = zip_temp.name
             
-            return JSONResponse(content={
-                'total_files': len(image_files),
-                'processed_files': len([r for r in results if 'error' not in r]),
-                'failed_files': len([r for r in results if 'error' in r]),
-                'results': results
-            })
+            # Создаем ZIP архив с результатами
+            with zipfile.ZipFile(results_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                
+                for image_file in image_files:
+                    image_path = os.path.join(temp_dir, image_file)
+                    filename_stem = Path(image_file).stem
+                    
+                    try:
+                        # Обрабатываем изображение
+                        json_data, img_path = process_single_image(image_path)
+                        
+                        # Добавляем информацию о файле в JSON
+                        json_data['filename'] = image_file
+                        json_data['processed_filename'] = f"{filename_stem}_processed.jpg"
+                        
+                        # Добавляем обработанное изображение в папку images/
+                        if os.path.exists(img_path):
+                            zipf.write(img_path, f"images/{filename_stem}_processed.jpg")
+                            # Очищаем временный файл изображения
+                            os.unlink(img_path)
+                        else:
+                            # Если изображение не было сохранено, используем оригинал
+                            zipf.write(image_path, f"images/{filename_stem}_original.jpg")
+                        
+                        # Добавляем JSON файл в папку json/
+                        json_str = json.dumps(json_data, ensure_ascii=False, indent=2)
+                        zipf.writestr(f"json/{filename_stem}_results.json", json_str)
+                        
+                    except Exception as e:
+                        # Создаем JSON с ошибкой
+                        error_data = {
+                            'filename': image_file,
+                            'error': f"Ошибка обработки: {str(e)}",
+                            'classes': [],
+                            'probs': [],
+                            'masks': [],
+                            'obb_rows': []
+                        }
+                        json_str = json.dumps(error_data, ensure_ascii=False, indent=2)
+                        zipf.writestr(f"json/{filename_stem}_error.json", json_str)
+                        
+                        # Добавляем оригинальное изображение
+                        zipf.write(image_path, f"images/{filename_stem}_original.jpg")
+                        
+            
+            # Читаем ZIP файл в память
+            with open(results_zip_path, 'rb') as f:
+                zip_data = f.read()
+            
+            # Очищаем временный ZIP файл
+            os.unlink(results_zip_path)
+            
+            # Возвращаем ZIP архив как ответ
+            return Response(
+                content=zip_data,
+                media_type='application/zip',
+                headers={
+                    'Content-Disposition': f'attachment; filename="batch_prediction_results_{Path(zip_file.filename).stem}.zip"'
+                }
+            )
             
     except zipfile.BadZipFile:
         raise HTTPException(
@@ -196,6 +279,13 @@ async def predict_batch_images(zip_file: UploadFile = File(...)):
             detail="Некорректный ZIP архив"
         )
     except Exception as e:
+        # Очищаем временные файлы в случае ошибки
+        if 'results_zip_path' in locals() and os.path.exists(results_zip_path):
+            try:
+                os.unlink(results_zip_path)
+            except:
+                pass
+                
         raise HTTPException(
             status_code=500, 
             detail=f"Ошибка обработки архива: {str(e)}"

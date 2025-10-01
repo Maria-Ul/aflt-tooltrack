@@ -1,6 +1,7 @@
 from pathlib import Path
 import gc
 import warnings
+import os
 
 import torch
 from ultralytics import YOLO
@@ -250,7 +251,7 @@ class SegmentModel:
 
     def visualize_oriented_bboxes(
         self,
-        save_path="obb_vis.png",
+        save_path="/app/app/ml/img/",
         show=False,
         line_thickness=2,
         mask_alpha=0.35,
@@ -261,7 +262,8 @@ class SegmentModel:
         text_bg_alpha=0.55,
         mask_fill_lighter=False,     # осветлять заливку масок (тот же оттенок, выше V, ниже S)
         mask_s_mul=0.90,             
-        mask_v_mul=1.35              
+        mask_v_mul=1.35,
+        img_path=""        
     ):
         if self.r is None:
             raise RuntimeError("Сначала вызовите predict_image(...)")
@@ -280,7 +282,7 @@ class SegmentModel:
         masks_obj = getattr(self.r, "masks", None)
         if masks_obj is None or getattr(masks_obj, "data", None) is None:
             if save_path is not None:
-                cv2.imwrite(str(save_path), img)
+                cv2.imwrite(save_path, img)
             if show:
                 cv2.imshow("OBB visualization", img)
                 cv2.waitKey(0)
@@ -343,12 +345,15 @@ class SegmentModel:
             )            
 
         if save_path is not None:
+            filename = os.path.basename(img_path)
+            save_path = f"{save_path}generated_{filename}"
             cv2.imwrite(str(save_path), img)
         if show:
             cv2.imshow("OBB visualization", img)
             cv2.waitKey(0)
             cv2.destroyAllWindows()
-        return img
+
+        return save_path
     
     ### helpers#####
 
@@ -602,13 +607,6 @@ def get_prediction_results(model, img_path):
         obb_img = img.copy()
         obb_img = crop_obb(obb, obb_img)
         text_list = []
-        # result = ocr_model.predict(obb_img)
-        # for res in result:
-        #     rec_texts = res['rec_texts']
-        #     for t in rec_texts:
-        #         reconstructed_text = reconstruct(t)
-        #         if reconstructed_text is not None:
-        #             text_list.append(reconstructed_text)
         unique_texts = set(text_list)
         if len(list(unique_texts))>0:
             obb_texts.append(list(unique_texts)[0])
@@ -637,6 +635,27 @@ def run(img_path):
     classes, obb_rows, masks, probs = get_prediction_results(model, img_path)
     
     return classes, obb_rows, masks, probs
+
+def get_prediction_results_with_img(model, img_path):
+    model.predict_image(img_path)
+    obb_rows = model.get_oriented_bboxes(normalized=True)
+    classes = [obb[0] for obb in obb_rows]
+    masks = model.get_masks()
+    img = cv2.imread(img_path)
+    obb_texts = []
+    for i, obb in enumerate(obb_rows):
+        obb_img = img.copy()
+        obb_img = crop_obb(obb, obb_img)
+        text_list = []
+        unique_texts = set(text_list)
+        if len(list(unique_texts))>0:
+            obb_texts.append(list(unique_texts)[0])
+        else: obb_texts.append(None)
+
+    probs  = model.get_probs()
+    img = model.visualize_oriented_bboxes(img_path=img_path)
+
+    return classes, obb_rows, masks, probs, img
 
 
 if __name__ == "__main__":
