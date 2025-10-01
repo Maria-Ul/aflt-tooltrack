@@ -17,12 +17,12 @@ import UserGuideScreen from './screens/new/UserGuideScreen';
 import QAEmployeeNavigation from './screens/new/qa_role/QAEmployeeNavigation';
 
 export const SERVICE_NAME = `Сервис приема и выдачи инструментов`
+// TODO панель настроек
+export const CONFIDENCE_THRESHOLD = 0.9
 
 export const AppStack = createNativeStackNavigator()
 
 export default function App() {
-  var os = require("os")
-  var end = JSON.stringify(os.EOL)
   applyCustomConfig(config)
 
   return (

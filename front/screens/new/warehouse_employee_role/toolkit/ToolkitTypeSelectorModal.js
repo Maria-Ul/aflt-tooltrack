@@ -43,9 +43,10 @@ const ToolkitTypeSelectorModal = ({
                                         renderItem={
                                             ({ item, index, separators }) => {
                                                 return <ToolkitTypeItem
+                                                    isShowDelete={false}
                                                     data={item}
                                                     onPress={onSelectToolkitType}
-                                                    onDeleteTollkitType={() => {}}
+                                                    onDeleteTollkitType={() => { }}
                                                 />
                                             }
                                         }

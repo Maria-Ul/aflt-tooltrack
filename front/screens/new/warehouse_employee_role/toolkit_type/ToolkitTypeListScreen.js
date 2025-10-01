@@ -107,7 +107,9 @@ const ToolkitTypeListScreen = ({ navigation }) => {
   )
 }
 
-export const ToolkitTypeItem = ({ data, onPress, onDeleteTollkitType }) => {
+export const ToolkitTypeItem = ({ data, onPress, onDeleteTollkitType,
+  isShowDelete = true,
+}) => {
   return (
     <TouchableOpacity onPress={onPress.bind(null, data)}>
       <VStack>
@@ -116,10 +118,11 @@ export const ToolkitTypeItem = ({ data, onPress, onDeleteTollkitType }) => {
             <Icon as={Component} />
             <Text size='lg' bold={true}>{data.name}</Text>
           </HStack>
-
-          <Button onPress={onDeleteTollkitType.bind(null, data.id)}>
-            <Icon as={TrashIcon} color="white" />
-          </Button>
+          {isShowDelete ?
+            <Button onPress={onDeleteTollkitType.bind(null, data.id)}>
+              <Icon as={TrashIcon} color="white" />
+            </Button>
+            : <></>}
         </HStack>
         <Text size="md" ml="$4" mb="$3">{data.description}</Text>
         <Divider />

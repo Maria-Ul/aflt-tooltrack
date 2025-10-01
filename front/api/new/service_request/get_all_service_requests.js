@@ -4,7 +4,9 @@ import { SESSION_TOKEN } from "../login"
 
 export const getAllServiceRequests = async ({
     workerId = null,
-    onSuccess }) => {
+    onSuccess,
+    onError = () => { },
+}) => {
     const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
     var response = await afltToolscanApi.get(
         url = "/api/maintenance-requests/",
@@ -23,6 +25,7 @@ export const getAllServiceRequests = async ({
         onSuccess(response.data)
         console.log(response)
     } else {
+        onError(response)
         console.log(response)
     }
 }

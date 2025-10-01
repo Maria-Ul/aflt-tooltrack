@@ -1,21 +1,30 @@
-import { StyleSheet } from 'react-native'
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { Button, ButtonText, Card, Center, Heading, HStack, Icon, Text, View, VStack } from '@gluestack-ui/themed'
 import { CameraView, useCameraPermissions } from 'expo-camera'
-import { Button, ButtonText, Center, Heading, HStack, VStack, Text, View, Card, Box, Icon } from '@gluestack-ui/themed'
-import { Header } from '@rneui/themed'
-import ToolItem from './ToolItem'
-import WhiteCard from '../../../../components/WhiteCard'
-import ResultModal from './ResultModal'
-import { BACKEND_URL } from '../../../../api/baseApi'
-import { io } from 'socket.io-client'
-import Svg, { Polyline, Rect } from 'react-native-svg'
-import { YellowBox } from 'react-native-web'
-import { MessageCircleWarningIcon, TriangleAlertIcon } from 'lucide-react-native'
 import { getDocumentAsync } from 'expo-document-picker'
+import { TriangleAlertIcon } from 'lucide-react-native'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { StyleSheet } from 'react-native'
+import Svg, { Polyline } from 'react-native-svg'
+import { getToolkitWithTools } from '../../../../api/new/tool_sets/get_tool_set_with_tools'
+import ResultModal from './ResultModal'
+import ToolItem from './ToolItem'
 
 // использовать Grid
 const ToolsScanerScreen = ({ route, navigation }) => {
-    const { requestId } = route.params
+    const { requestWithRelations } = route.params
+    const [toolkitWithRelations, setToolkitWithRelations] = useState(null)
+
+    useEffect(() => {
+        console.log("TOOLS_SCANNER", requestWithRelations)
+        if (requestWithRelations != null) {
+            getToolkitWithTools({
+                id: requestWithRelations.tool_set.id,
+                onSuccess: (data) => {
+                    setToolkitWithRelations(data)
+                }
+            })
+        }
+    }, [requestWithRelations])
 
     const cameraRef = useRef(null)
     const socketRef = useRef(null)
@@ -49,8 +58,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             y3: 0.45,
             x4: 0.00,
             y4: 0.65,
-        }
-    ])
+        }])
 
     const [paths, setPaths] = useState([])
 

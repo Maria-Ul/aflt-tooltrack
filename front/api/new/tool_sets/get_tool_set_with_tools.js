@@ -13,10 +13,6 @@ export const getToolkitWithTools = async ({
             headers: {
                 Authorization: "Bearer " + sessionToken
             },
-            params: {
-                skip: 0,
-                limit: 1000,
-            }
         }
     )
     if (response.status == 200) {

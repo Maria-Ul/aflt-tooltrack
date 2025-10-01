@@ -52,7 +52,8 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
         }
     }, [])
 
-    const onAddToolkitType = () => {
+    const onAddToolkitType = useCallback(() => {
+        console.log("ADD", toolsPartNumbersMap)
         if (toolkit == null) {
             createToolkitRequest(
                 {
@@ -77,7 +78,7 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
                 }
             )
         }
-    }
+    }, [selectedToolkitType, toolkitPartNumber, toolkitDescription, toolsPartNumbersMap])
 
     const onSelectToolkitType = (toolkitType) => {
         getToolkitTypeWithTools({
@@ -95,6 +96,13 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
 
     const onCloseModal = () => {
         setIsModalOpen(false)
+    }
+
+    const onPartNumberChanged = (itemId, newpartNum) => {
+        //console.log(toolsPartNumbersMap)
+        setToolsPartNumbersMap(
+            new Map(toolsPartNumbersMap.set(itemId, newpartNum))
+        )
     }
 
     const onBackPressed = () => {
@@ -132,7 +140,7 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
                                 </VStack>
                                 <Button action='positive' onPress={onAddToolkitType}>
                                     <ButtonText>{
-                                        toolkit != null ? "Изменить тип набора" : "Добавить тип набора"
+                                        toolkit != null ? "Изменить набор" : "Добавить набор"
                                     }</ButtonText>
                                 </Button>
                             </VStack>
@@ -149,8 +157,8 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
                                             ({ item, index, separators }) => {
                                                 return <ToolPartNumberInputItem
                                                     toolType={item}
-                                                    partNumber={""}
-                                                    onPartNumberChanged={() => { }}
+                                                    partNumber={toolsPartNumbersMap.get(item.id)}
+                                                    onPartNumberChanged={onPartNumberChanged}
                                                 />
                                             }
                                         }
@@ -173,12 +181,12 @@ const ToolkitCreateScreen = ({ route, navigation }) => {
     )
 }
 
-const ToolPartNumberInputItem = ({ toolType, partNumber, onPartNumberChanged }) => {
+const ToolPartNumberInputItem = ({ itemId, toolType, partNumber, onPartNumberChanged }) => {
     return (
         <VStack>
             <Text>{toolType.name}</Text>
             <Input>
-                <InputField value={partNumber} onChangeText={onPartNumberChanged}
+                <InputField value={partNumber} onChangeText={(text) => {onPartNumberChanged(toolType.id, text)}}
                     placeholder='Введите партийный номер инструмента'></InputField>
             </Input>
         </VStack>
