@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from . import auth, users, websocket, aircraft, tool_types, tool_set_types, tool_sets, maintenance_requests, incidents
+from . import auth,files,users, websocket, aircraft, tool_types, tool_set_types, tool_sets, maintenance_requests, incidents
 
 router = APIRouter()
 
@@ -13,6 +13,7 @@ router.include_router(tool_sets.router)
 router.include_router(maintenance_requests.router)
 router.include_router(incidents.router)  # добавляем incidents роутер
 router.include_router(websocket.router)
+router.include_router(files.router)
 
 # Основной эндпоинт для проверки работы API
 @router.get("/")

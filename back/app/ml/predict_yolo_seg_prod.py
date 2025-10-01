@@ -616,7 +616,7 @@ def get_prediction_results(model, img_path):
 
     probs  = model.get_probs()
 
-    return classes, obb_rows, masks, probs, obb_texts
+    return classes, obb_rows, masks, probs
 
 def run(img_path):
     script_dir = Path(__file__).parent.absolute()
@@ -634,7 +634,7 @@ def run(img_path):
     #     use_doc_orientation_classify=True, 
     #     use_doc_unwarping=True, 
     #     use_textline_orientation=True)
-    classes, obb_rows, masks, probs, obb_texts = get_prediction_results(model, img_path)
+    classes, obb_rows, masks, probs = get_prediction_results(model, img_path)
     
     return classes, obb_rows, masks, probs
 
