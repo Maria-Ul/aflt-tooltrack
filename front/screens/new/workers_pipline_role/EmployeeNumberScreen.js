@@ -55,7 +55,7 @@ const EmployeeNumberScreen = ({ navigation }) => {
 
   const onTabNumChanged = (text) => {
     setTabNum(text)
-    setIsNextEnabled(text.length >= 6)
+    setIsNextEnabled(text.length >= 1)
   }
 
   return (
