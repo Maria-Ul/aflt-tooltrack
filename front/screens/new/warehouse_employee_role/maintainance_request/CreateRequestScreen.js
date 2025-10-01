@@ -61,7 +61,7 @@ const CreateRequestScreen = ({ navigation }) => {
             tool_set_id: selectedToolkit,
             warehouse_employee_id: selectedWarehouseEmployee,
             description: description,
-            status: REQUEST_COMPLETED,
+            status: REQUEST_CREATED,
             onSuccess: () => {
                 navigation.goBack()
             }
