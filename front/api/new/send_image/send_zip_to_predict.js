@@ -1,8 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { afltToolscanApi, BACKEND_URL } from "../../baseApi"
 import { SESSION_TOKEN } from "../login"
-import * as FileSystem from 'expo-file-system';
-import { Platform } from "react-native";
 import { saveZipSimple } from "./send_image_to_predict";
 
 export const sendZipToPredictRequest = async ({
