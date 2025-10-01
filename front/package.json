@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "expo/AppEntry.js",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --port 8085",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web --port=80"
@@ -13,6 +13,9 @@
     "@gluestack-style/react": "^1.0.56",
     "@gluestack-ui/config": "^1.1.18",
     "@gluestack-ui/themed": "^1.1.28",
+    "@react-native-aria/focus": "^0.2.9",
+    "@react-native-aria/interactions": "^0.2.16",
+    "@react-native-aria/overlays": "^0.3.15",
     "@react-native-async-storage/async-storage": "^1.23.1",
     "@react-navigation/drawer": "^6.7.2",
     "@react-navigation/native": "^6.1.17",
