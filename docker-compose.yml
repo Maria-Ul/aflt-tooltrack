@@ -13,15 +13,6 @@ services:
     env_file:
       - .env
 
-  rabbitmq:
-    image: rabbitmq:3.9-management-alpine
-    restart: always
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
-      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq//
-    env_file:
-      - .env
-
   backend:
     build:
       context: .
@@ -33,27 +24,11 @@ services:
       - "8000:8000"
     depends_on:
       - db
-      - rabbitmq
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}
       RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq//
     env_file:
       - .env
-
-  # frontend:
-  #   build:
-  #     context: .
-  #     dockerfile: docker/front/Dockerfile
-  #   volumes:
-  #     - ./front:/app
-  #   ports:
-  #     - "3000:3000"
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     REACT_APP_API_URL: ${BACKEND_URL}
-  #   env_file:
-  #     - .env
 
 volumes:
   db_data:
