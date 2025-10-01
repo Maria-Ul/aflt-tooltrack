@@ -201,7 +201,7 @@ class SegmentModel:
     def get_masks(self):
         return getattr(self.r.masks, "xyn", None)
 
-    def get_oriented_bboxes(self, normalized=False):
+    def get_oriented_bboxes(self, normalized=True):
             """
             Возвращает список строк формата:
                 class_index x1 y1 x2 y2 x3 y3 x4 y4
@@ -593,7 +593,7 @@ def reconstruct(text):
 def get_prediction_results(model, ocr_model, img_path):
     model.predict_image(img_path)
     # OBB в формате [class_index, x1, y1, x2, y2, x3, y3, x4, y4]
-    obb_rows = model.get_oriented_bboxes(normalized=False)
+    obb_rows = model.get_oriented_bboxes(normalized=True)
     classes = [obb[0] for obb in obb_rows]
     masks = model.get_masks()
     img = cv2.imread(img_path)
