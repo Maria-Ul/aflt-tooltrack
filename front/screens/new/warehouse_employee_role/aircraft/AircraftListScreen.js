@@ -89,12 +89,12 @@ const AircraftListItem = ({ data, onCreateRequest, onEdit }) => {
 
 
       <HStack space="md">
-        <Button onPress={onCreateRequest}>
+        {/* <Button onPress={onCreateRequest}>
           <ButtonText>Создать заявку на обслуживание</ButtonText>
         </Button>
         <Button color='orange' variant='outline' onPress={onEdit}>
           <Icon as={EditIcon} />
-        </Button>
+        </Button> */}
       </HStack>
     </HStack>
   )
