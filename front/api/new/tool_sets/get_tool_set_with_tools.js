@@ -8,7 +8,7 @@ export const getToolkitWithTools = async ({
 }) => {
     const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
     var response = await afltToolscanApi.get(
-        url = `/api/tool-sets/${id}/with-tools`,
+        url = `/api/tool-sets/${id}/with-type`,
         config = {
             headers: {
                 Authorization: "Bearer " + sessionToken
