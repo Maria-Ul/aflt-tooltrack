@@ -644,7 +644,7 @@ if __name__ == "__main__":
     r = model.predict_image(img_path)
 
     # OBB в формате [class_index, x1, y1, x2, y2, x3, y3, x4, y4]
-    obb_rows = model.get_oriented_bboxes(normalized=False)
+    obb_rows = model.get_oriented_bboxes(normalized=True)
     
     out_img = model.visualize_oriented_bboxes(
         save_path="obb_vis_DSCN4946.png",
