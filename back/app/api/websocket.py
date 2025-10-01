@@ -4,8 +4,33 @@ import time
 import base64
 import json
 from datetime import datetime
+from pathlib import Path
+from app.ml import predict_yolo_seg_prod
 
 router = APIRouter(prefix="/ws", tags=["WebSocket видео потоки"])
+
+# Создаем словарь для маппинга
+TOOL_CLASSES_MAP = {
+    0: "BOKOREZY",
+    1: "KEY_ROZGKOVY_NAKIDNOY_3_4", 
+    2: "KOLOVOROT",
+    3: "OTKRYVASHKA_OIL_CAN",
+    4: "OTVERTKA_MINUS",
+    5: "OTVERTKA_OFFSET_CROSS",
+    6: "OTVERTKA_PLUS",
+    7: "PASSATIGI",
+    8: "PASSATIGI_CONTROVOCHNY",
+    9: "RAZVODNOY_KEY",
+    10: "SHARNITSA"
+}
+
+def map_classes_to_names(class_numbers):
+    """Конвертирует числа в названия классов используя словарь"""
+    result = []
+    for class_num in class_numbers:
+        result.append(TOOL_CLASSES_MAP.get(class_num, f"UNKNOWN_{class_num}"))
+    return result
+
 
 class ConnectionManager:
     def __init__(self):
@@ -71,7 +96,7 @@ class ConnectionManager:
             
             self.frames_history[client_id].append({
                 'frame': frame_data,
-                'timestamp': data.get('timestamp', time.time()),
+                # 'timestamp': data.get('timestamp', time.time()),
                 'size': len(base64.b64decode(frame_data))
             })
             
@@ -84,16 +109,44 @@ class ConnectionManager:
             frame_size = len(base64.b64decode(frame_data))
             print(f'📹 Кадр от {client_id[:8]}... | FPS: {fps:.1f} | Размер: {frame_size} байт')
             
-            # Транслируем другим клиентам
-            # await self.broadcast_frame(client_id, frame_data, data.get('timestamp'))
+            # Декодируем base64 в бинарные данные
+            image_data = base64.b64decode(frame_data)
+            # Сохраняем в файл
+            with open('/app/app/ml/img/output.jpg', 'wb') as f:
+                f.write(image_data)
+
+            classes, obb_rows, masks, probs = predict_yolo_seg_prod.run('/app/app/ml/img/output.jpg')
+
+            # Конвертируем masks в JSON-сериализуемый формат
+            serializable_masks = []
+            if masks is not None:
+                for mask in masks:
+                    # Конвертируем numpy array в список
+                    if hasattr(mask, 'tolist'):
+                        serializable_masks.append(mask.tolist())
+                    else:
+                        serializable_masks.append(mask)
+            serializable_probs = []
+            if probs is not None:
+                for prob in probs:
+                    # Конвертируем numpy array в список
+                    if hasattr(prob, 'tolist'):
+                        serializable_probs.append(prob.tolist())
+                    else:
+                        serializable_probs.append(prob)
             
+            resultClasses = map_classes_to_names(classes)
+
             # Отправляем подтверждение клиенту
             await self.send_message(client_id, {
+                'classes': resultClasses,
+                'probs': serializable_probs,
+                'masks': serializable_masks,
+                'obb_rows': obb_rows,
                 'type': 'frame_received',
                 'frame_number': client_data['frame_count'],
                 'fps': fps,
-                'timestamp': time.time(),
-                'frame': "/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCwAAD/2Q=="
+                'timestamp': time.time()
             })
             
             return True

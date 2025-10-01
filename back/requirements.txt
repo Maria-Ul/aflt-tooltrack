@@ -1,16 +1,36 @@
+# Веб-фреймворк и API
 fastapi
 uvicorn[standard]
+python-multipart>=0.0.6
+
+# База данных
 psycopg2-binary
 sqlalchemy
-pika
-python-dotenv
 databases
 asyncpg
-bcrypt
 alembic
+
+# Аутентификация и безопасность
+bcrypt
 python-jose[cryptography]
 passlib[bcrypt]
 jwt
+
+# Очереди сообщений
+pika
+
+# Утилиты
+python-dotenv
+
+# Тестирование
 pytest>=7.0.0
 pytest-asyncio>=0.21.0
 httpx>=0.24.0
+
+# Компьютерное зрение и ML
+torch>=2.0.0
+ultralytics>=8.0.0
+opencv-python-headless>=4.5.0
+paddleocr>=2.7.0
+onnxruntime>=1.16.0
+openvino>=2023.0.0
