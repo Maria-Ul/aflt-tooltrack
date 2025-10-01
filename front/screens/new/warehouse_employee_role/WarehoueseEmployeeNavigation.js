@@ -1,37 +1,65 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer'
-import { AIRCRAFT_CREATE, AIRCRAFT_LIST, EMPLOYEE_NUMBER_ROUTE, KIT_LIST, REQUESTS_LIST, TEMPLATE_KIT_LIST, TEMPLATE_TOOL_LIST } from '../Screens'
-import RequestsListScreen from './RequestsListScreen'
-import AircraftListScreen from './AircraftListScreen'
-import KitListScreen from './KitListScreen'
-import TemplateKitListScreen from './TemplateKitListScreen'
-import TemplateToolListScreen from './TemplateToolListScreen'
+import { StyleSheet } from 'react-native'
+import { headerLeft, headerRight, headerStyle } from '../AppHeader'
+import { AIRCRAFT_ROUTE, REQUESTS_ROUTE, TOOL_TYPE_ROUTE, TOOLKIT_ROUTE, TOOLKIT_TYPE_ROUTE } from '../Screens'
+import AircraftNavigation from './aircraft/AircraftNavigation'
+import RequestsListScreen from './maintainance_request/RequestsListScreen'
+import ToolTypeNavigation from './tool_type/ToolTypeNavigation'
+import ToolkitListScreen from './toolkit/ToolkitListScreen'
+import ToolkitTypeNavigation from './toolkit_type/ToolkitTypeNavigation'
+import ToolkitNavigation from './toolkit/ToolkitNavigation'
+import ServiceRequestsNavigation from './maintainance_request/RequestsNavigation'
 
 export const WarehouseEmployeeRoleDrawer = createDrawerNavigator()
 
 const WarehoueseEmployeeNavigation = () => {
     return (
-        <WarehouseEmployeeRoleDrawer.Navigator>
+        <WarehouseEmployeeRoleDrawer.Navigator initialRouteName={REQUESTS_ROUTE}>
             <WarehouseEmployeeRoleDrawer.Screen
-                name={REQUESTS_LIST}
-                component={RequestsListScreen}
+                name={REQUESTS_ROUTE}
+                component={ServiceRequestsNavigation}
+                options={{
+                    headerStyle: headerStyle,
+                    headerRight: headerRight,
+                    headerTitle: headerLeft,
+                }}
             />
             <WarehouseEmployeeRoleDrawer.Screen
-                name={AIRCRAFT_LIST}
-                component={AircraftListScreen}
+                name={AIRCRAFT_ROUTE}
+                component={AircraftNavigation}
+                options={{
+                    headerStyle: headerStyle,
+                    headerRight: headerRight,
+                    headerTitle: headerLeft,
+                    headerTitle: headerLeft,
+                }}
             />
             <WarehouseEmployeeRoleDrawer.Screen
-                name={KIT_LIST}
-                component={KitListScreen}
+                name={TOOLKIT_ROUTE}
+                component={ToolkitNavigation}
+                options={{
+                    headerStyle: headerStyle,
+                    headerRight: headerRight,
+                    headerTitle: headerLeft,
+                }}
             />
             <WarehouseEmployeeRoleDrawer.Screen
-                name={TEMPLATE_KIT_LIST}
-                component={TemplateKitListScreen}
+                name={TOOLKIT_TYPE_ROUTE}
+                component={ToolkitTypeNavigation}
+                options={{
+                    headerStyle: headerStyle,
+                    headerRight: headerRight,
+                    headerTitle: headerLeft,
+                }}
             />
             <WarehouseEmployeeRoleDrawer.Screen
-                name={TEMPLATE_TOOL_LIST}
-                component={TemplateToolListScreen}
+                name={TOOL_TYPE_ROUTE}
+                component={ToolTypeNavigation}
+                options={{
+                    headerStyle: headerStyle,
+                    headerRight: headerRight,
+                    headerTitle: headerLeft,
+                }}
             />
         </WarehouseEmployeeRoleDrawer.Navigator>
     )
