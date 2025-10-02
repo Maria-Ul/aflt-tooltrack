@@ -29,8 +29,13 @@ make up
 ```
 Приложение инициализируется ~10 секунд.
 
-После этого сервис будет доступен по адресу:
-<http://localhost>
+Сервисы будут доступны:
+
+Frontend: http://localhost
+
+API: http://localhost:8000
+
+API Docs: http://localhost:8000/docs
 
 **2. Остановка**
 ```
