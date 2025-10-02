@@ -208,6 +208,8 @@ const ToolsScanerScreen = ({ route, navigation }) => {
         console.log(event)
         if (nBoxes != null) {
             //console.log(nBoxes)
+            setIsShowSuccessModal(probs.length == classColorsMap.length &&
+                probs.every(p => p > CONFIDENCE_THRESHOLD))
             var oBoxes = []
             nBoxes.forEach((b, index, a) => {
                 const classNum = nBoxes[index][0]
