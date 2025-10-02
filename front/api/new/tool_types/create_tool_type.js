@@ -10,13 +10,14 @@ export const createToolTypeRequest = async ({
     onSuccess
 }) => {
     const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
+    console.log("CREATE_TOOL_TYPES", type_class)
     var response = await afltToolscanApi.post(
         url = "/api/tool-types/",
         data = {
             name: name,
             category_id: category_id,
             is_item: is_item,
-            type_class: type_class,
+            tool_class: type_class,
         },
         {
             headers: {

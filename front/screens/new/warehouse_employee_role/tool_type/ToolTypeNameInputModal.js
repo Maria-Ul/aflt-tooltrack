@@ -10,14 +10,21 @@ const ToolTypeNameInputModal = ({
     onContinueClick,
 }) => {
     const [nameInput, setNameInput] = useState("")
-    const [selectedClass, setSelectedClass] = useState("")
+    const [selectedClass, setSelectedClass] = useState(null)
 
     const selectorItems = classesList.map(c => {
         return (<SelectItem label={c} value={c} />)
     })
+
+    const onProcess = () => {
+        onContinueClick(nameInput, selectedClass)
+        setNameInput("")
+        setSelectedClass(null)
+    }
+
     console.log(selectorItems)
     const ref = useRef(null)
-
+    console.log(selectedClass)
     return (
         <Modal
             isOpen={isOpen}
@@ -76,7 +83,7 @@ const ToolTypeNameInputModal = ({
                 <ModalFooter>
                     <HStack>
                         <Button
-                            onPress={onContinueClick.bind(null, nameInput, selectedClass)}
+                            onPress={onProcess}
                             mr='$5'
                         >
                             <ButtonText>Добавить</ButtonText>

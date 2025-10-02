@@ -7,6 +7,8 @@ const ColorBox = ({colorHex, colorName, isShowText}) => {
     backgroundColor: colorHex,
   };
   const boxText = {
+    width: "32px",
+    height: "32px",
     color: parseInt(colorHex.replace('#', ''), 16) > 0xffffff / 1.1 ? '#333333' : 'white',
   };
   let text = ""
@@ -20,10 +22,8 @@ const ColorBox = ({colorHex, colorName, isShowText}) => {
 
 const styles = StyleSheet.create({
   box: {
-    marginBottom: 10,
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    alignItems: 'center',
+    width: "32px",
+    height: "32px",
     borderColor: '#dddddd',
     borderWidth: 1,
     borderStyle: 'solid',

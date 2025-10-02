@@ -1,26 +1,37 @@
 import { StyleSheet } from 'react-native'
 import React from 'react'
 import { CheckIcon, CloseIcon, HStack, Icon, Text, View, VStack } from '@gluestack-ui/themed'
+import ColorBox from '../../../../components/ColorBox'
 
 const ToolItem = ({
+    color,
     name,
     probability,
     threshold,
 }) => {
     var successRecognition = probability > threshold
+    var notFound = !probability
     return (
-        <HStack p='$3' mb='$1' style={styles.tool_item_container} alignItems='center' alignContent='space-between'>
-            <VStack mr='$10'>
-                <Text size='lg'>{name}</Text>
+        <HStack p="$0.5" heigh="50px"  width="400px" style={styles.tool_item_container} alignItems='start' alignContent='space-between'>
+            <VStack mr='$5' width="250px">
+                {/* <ColorBox
+                    colorHex={color}
+                    colorName={""}
+                    isShowText={false}
+                /> */}
+                <Text size='xs'>{name}</Text>
                 {
-                    successRecognition ?
-                        <View /> : <Text size='xs' color='orange'>Не удается точно определить инструмент</Text>
+                    notFound ? <></> :
+                        successRecognition ?
+                            <View /> : <Text size='xs' color='orange'>Не удается точно определить инструмент</Text>
                 }
 
             </VStack>
             <HStack>
-                <Text size='lg' bold={true}>{probability * 100}%</Text>
-                <Icon as={successRecognition ? CheckIcon : CloseIcon} size='xl'
+                {
+                    notFound ? <></> : <Text size='xs' bold={true}>{(probability * 100).toFixed(2)}%</Text>
+                }
+                <Icon as={successRecognition ? CheckIcon : CloseIcon} size='xs'
                     color={successRecognition ? 'green' : "red"} />
             </HStack>
         </HStack>

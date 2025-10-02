@@ -96,6 +96,7 @@ const ToolTypeCreateScreen = ({ navigation }) => {
     }
 
     const onSaveClick = (typeName, typeClass) => {
+        console.log("TYPECLASS", typeClass)
         createToolTypeRequest({
             name: typeName,
             category_id: isRootCategoryAdd ? null : selectedItem.id,

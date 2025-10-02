@@ -14,21 +14,21 @@ import { sendZipToPredictRequest } from '../../../../api/new/send_image/send_zip
 import { BOKOREZY_CLASS } from '../../warehouse_employee_role/tool_type/ToolTypeCreateScreen'
 import { CONFIDENCE_THRESHOLD } from '../../../../App'
 
-const classesRusNames = new Map(Object.entries(
-    {
-        BOKOREZY: "Бокорезы",
-        PASSATIGI: "Пассатижи",
-        SHARNITSA: "Шэрница",
-        KOLOVOROT: "Коловорот",
-        RAZVODNOY_KEY: "Разводной ключ",
-        PASSATIGI_CONTROVOCHNY: "Пассатижи центровочные",
-        KEY_ROZGKOVY_NAKIDNOY_3_4: "Ключ рожковый/накидной 3/4",
-        OTVERTKA_PLUS: "Отвертка +",
-        OTVERTKA_MINUS: "Отвертка -",
-        OTVERTKA_OFFSET_CROSS: "Отвертка на смещенный крест",
-        OTKRYVASHKA_OIL_CAN: "Открывашка для банок с маслом",
-    }
-))
+// const classesRusNames = new Map(Object.entries(
+//     {
+//         BOKOREZY: "Бокорезы",
+//         PASSATIGI: "Пассатижи",
+//         SHARNITSA: "Шэрница",
+//         KOLOVOROT: "Коловорот",
+//         RAZVODNOY_KEY: "Разводной ключ",
+//         PASSATIGI_CONTROVOCHNY: "Пассатижи центровочные",
+//         KEY_ROZGKOVY_NAKIDNOY_3_4: "Ключ рожковый/накидной 3/4",
+//         OTVERTKA_PLUS: "Отвертка +",
+//         OTVERTKA_MINUS: "Отвертка -",
+//         OTVERTKA_OFFSET_CROSS: "Отвертка на смещенный крест",
+//         OTKRYVASHKA_OIL_CAN: "Открывашка для банок с маслом",
+//     }
+// ))
 
 const colorsArr = [
     "#594f32",
@@ -47,6 +47,22 @@ const colorsArr = [
     "#0b0219",
     "#181919",
 ]
+
+const classColorsMap = new Map(Object.entries(
+    {
+        BOKOREZY: colorsArr[0],
+        PASSATIGI: colorsArr[0],
+        SHARNITSA: colorsArr[0],
+        KOLOVOROT: colorsArr[0],
+        RAZVODNOY_KEY: colorsArr[0],
+        PASSATIGI_CONTROVOCHNY: colorsArr[0],
+        KEY_ROZGKOVY_NAKIDNOY_3_4: colorsArr[0],
+        OTVERTKA_PLUS: colorsArr[0],
+        OTVERTKA_MINUS: colorsArr[0],
+        OTVERTKA_OFFSET_CROSS: colorsArr[0],
+        OTKRYVASHKA_OIL_CAN: colorsArr[0],
+    }
+))
 
 // использовать Grid
 const ToolsScanerScreen = ({ route, navigation }) => {
@@ -76,11 +92,12 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     const [height, setHeight] = useState(0)
 
     const [isShowMessAlert, setIsShowMessAlert] = useState(false)
-    const [isShowSuccessAlert, setIsShowSuccessModal] = useState(true)
+    const [isShowSuccessAlert, setIsShowSuccessModal] = useState(false)
 
     const [boxes, setBoxes] = useState([])
     const [paths, setPaths] = useState([])
     const [classes, setClasses] = useState([])
+    const [probs, setProbs] = useState([])
 
     useEffect(() => {
         setPaths(boxes.map(
@@ -208,6 +225,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             console.log(oBoxes)
             setBoxes(oBoxes)
             setClasses(classes)
+            setProbs(probs)
         }
     }
 
@@ -259,16 +277,21 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                 <VStack style={styles.container_buttons} p='$1'>
                     <Heading size='lg' m='$5'>{`Набор ${toolkitWithRelations != null ? toolkitWithRelations.batch_number : "-"}`}</Heading>
                     <Card>
-                        <VStack p='$5' mb='$9'>
+                        <VStack p='$5' mb='$9' space='$5'>
                             <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
                             {
                                 toolkitWithRelations != null ?
                                     toolkitWithRelations.tool_set_type.tool_types.map((toolType) => {
-                                        <ToolItem
+                                        const classIndex = classes.indexOf(toolType.tool_class)
+                                        const toolProb = probs[classIndex]
+                                        const classColor = classColorsMap.get(toolType.tool_class)
+                                        //console.log("CLASS_COLOR", classColor)
+                                        return (<ToolItem
+                                            color={classColor}
                                             name={toolType.name}
-                                            probability={0.5}
+                                            probability={toolProb}
                                             threshold={CONFIDENCE_THRESHOLD}
-                                        />
+                                        />)
                                     })
                                     : <>Загрузка данных о наборе</>
                             }
@@ -289,66 +312,75 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                         </VStack>
                     </Card>
                 </VStack>
-                <View p='$10'
-                    style={styles.container_camera}>
-                    <View onLayout={(event) => {
-                        const { x, y, width, height } = event.nativeEvent.layout
-                        setHeight(height)
-                        setWidth(width)
-                        console.log("SIZE:" + x + " " + y + " " + width + " " + height)
-                    }} style={styles.container_camera} >
-                        <CameraView
-                            mode='video'
-                            ratio='4:3'
-                            videoQuality='4:3'
-                            ref={cameraRef}
-                            style={styles.camera}
-                            onCameraReady={() => {
-                                console.log("READY")
-                                console.log(paths[0])
-                                launchStream()
-                            }}
-                        />
-                        <Svg style={{
-                            elevation: 10,
-                            position: "absolute",
-                            zIndex: 1,
-                            //top: '$10',
-                            //left: '$10',
-                            //backgroundColor: "red"
-                        }} viewBox={`0 0 ${width} ${height}`}
-                            height={`${height}px`}
-                            width={`${width}px`}
-                        >
-                            {paths.map((p, index) => {
-                                return (
-                                    <>
-                                        <Polyline
-                                            fill="transparent"
-                                            points={p}
-                                            stroke={colorsArr[index]}
-                                            strokeWidth="2px"
-                                        />
-                                    </>
-                                )
-                            })}
-                        </Svg>
-                        {isShowMessAlert ? <MessAlert
-                            style={{
+                <VStack>
+                    <View p='$10'
+                        style={styles.container_camera}>
+                        <View onLayout={(event) => {
+                            const { x, y, width, height } = event.nativeEvent.layout
+                            setHeight(height)
+                            setWidth(width)
+                            console.log("SIZE:" + x + " " + y + " " + width + " " + height)
+                        }} style={styles.container_camera} >
+                            <CameraView
+                                mode='video'
+                                ratio='4:3'
+                                videoQuality='4:3'
+                                ref={cameraRef}
+                                style={styles.camera}
+                                onCameraReady={() => {
+                                    console.log("READY")
+                                    console.log(paths[0])
+                                    launchStream()
+                                }}
+                            />
+                            <Text style={{
                                 position: 'absolute',
                                 top: 0,
-                                right: 0,
-                            }}
-                        /> : <></>}
-                        {isShowSuccessAlert ? <SuccessAlert
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                right: 0,
-                            }}
-                        /> : <></>}
+                                left: 0,
+                                zIndex: 0,
+                            }} size='lg' bold={true}>Видео с веб-камеры</Text>
+                            <Svg style={{
+                                elevation: 10,
+                                position: "absolute",
+                                zIndex: 1,
+                                //top: '$10',
+                                //left: '$10',
+                                //backgroundColor: "red"
+                            }} viewBox={`0 0 ${width} ${height}`}
+                                height={`${height}px`}
+                                width={`${width}px`}
+                            >
+                                {paths.map((p, index) => {
+                                    return (
+                                        <>
+                                            <Polyline
+                                                fill="transparent"
+                                                points={p}
+                                                stroke={colorsArr[index]}
+                                                strokeWidth="2px"
+                                            />
+                                        </>
+                                    )
+                                })}
+                            </Svg>
+                            {isShowMessAlert ? <MessAlert
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                }}
+                            /> : <></>}
+                            {isShowSuccessAlert ? <SuccessAlert
+                                style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                }}
+                            /> : <></>}
+                        </View>
                     </View>
-                </View>
+                </VStack>
+
             </HStack >
             <ResultModal
                 isOpen={isShowResultModal}
@@ -365,7 +397,8 @@ const MessAlert = ({ style }) => {
         <HStack style={style} p="$3" space='md' bgColor='#f79494ff'
             borderWidth="2px" borderColor='#ff0000ff' alignItems='center'>
             <Icon as={TriangleAlertIcon} size='xl' />
-            <Text size="lg" bold="true">{`Кажется, инструменты перекрывают друга друга.\nПопробуйте разложить их более равномерно`}</Text>
+            <Text size="lg" bold="true">{`Кажется, инструменты перекрывают друга друга.\n
+            Попробуйте разложить их более равномерно`}</Text>
         </HStack>
     )
 }
@@ -387,18 +420,23 @@ const styles = StyleSheet.create({
         flex: 100,
     },
     container_buttons: {
-        flex: 30,
+        flex: 20,
     },
     container_camera: {
         flex: 70,
-        //width: "640px",
-        //height: "480px",
+        width: "1200px",
+        height: "900px",
+        aspectRatio: '4:3',
         'clip-path': 'inset(0% 0% 0% 0% round 20px)',
     },
     camera: {
         //width: "640px",
         //height: "480px",
         flex: 70,
-        backgroundColor: 'grey',
-    }
+        aspectRatio: '4:3',
+        borderWidth: "2px",
+        borderColor: "grey",
+        backgroundColor: 'tranparent',
+        zIndex: 100,
+}
 })

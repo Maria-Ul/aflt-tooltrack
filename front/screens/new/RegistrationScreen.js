@@ -92,7 +92,7 @@ const RegistrationScreen = ({ navigation }) => {
                             </HStack>
                         </RadioGroup>
 
-                        <Text>Пароль</Text>
+                        <Text>{"Пароль (мин. 8 символов)"}</Text>
                         <Input>
                             <InputField value={password} onChangeText={setPassword} type="password" placeholder="Пароль" />
                         </Input>
