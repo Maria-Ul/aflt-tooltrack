@@ -115,7 +115,7 @@ class ConnectionManager:
             with open('/app/app/ml/img/output.jpg', 'wb') as f:
                 f.write(image_data)
 
-            classes, obb_rows, masks, probs = predict_yolo_seg_prod.run('/app/app/ml/img/output.jpg')
+            classes, obb_rows, masks, probs, overlap_flag, overlap_score = predict_yolo_seg_prod.run('/app/app/ml/img/output.jpg')
 
             # Конвертируем masks в JSON-сериализуемый формат
             serializable_masks = []
@@ -139,6 +139,8 @@ class ConnectionManager:
 
             # Отправляем подтверждение клиенту
             await self.send_message(client_id, {
+                'overlap_flag': overlap_flag,
+                'overlap_score': overlap_score,
                 'classes': resultClasses,
                 'probs': serializable_probs,
                 'masks': serializable_masks,

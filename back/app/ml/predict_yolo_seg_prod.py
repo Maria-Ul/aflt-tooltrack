@@ -596,11 +596,27 @@ def reconstruct(text):
 
 
 def get_prediction_results(model, img_path):
+    script_dir = Path(__file__).parent.absolute()
+    model_path = script_dir / "weights/yolo11s-classify-overlap.pt"
+    overlap_model = OverlapClassifier(
+        model_path=model_path, 
+        positive_label="overlap",
+        threshold=0.5, 
+        imgsz=640,
+        device=0 if torch.cuda.is_available() else "cpu",
+        verbose=False
+    )
+
     model.predict_image(img_path)
     # OBB в формате [class_index, x1, y1, x2, y2, x3, y3, x4, y4]
     obb_rows = model.get_oriented_bboxes(normalized=True)
     classes = [obb[0] for obb in obb_rows]
     masks = model.get_masks()
+
+    overlap_flag, overlap_score = None, None
+    if overlap_model is not None:
+        overlap_flag, overlap_score, _ = overlap_model.predict(img_path, threshold=None)
+
     img = cv2.imread(img_path)
     obb_texts = []
     for i, obb in enumerate(obb_rows):
@@ -614,7 +630,7 @@ def get_prediction_results(model, img_path):
 
     probs  = model.get_probs()
 
-    return classes, obb_rows, masks, probs
+    return classes, obb_rows, masks, probs, overlap_flag, overlap_score
 
 def run(img_path):
     script_dir = Path(__file__).parent.absolute()
@@ -632,9 +648,9 @@ def run(img_path):
     #     use_doc_orientation_classify=True, 
     #     use_doc_unwarping=True, 
     #     use_textline_orientation=True)
-    classes, obb_rows, masks, probs = get_prediction_results(model, img_path)
+    classes, obb_rows, masks, probs, overlap_flag, overlap_score = get_prediction_results(model, img_path)
     
-    return classes, obb_rows, masks, probs
+    return classes, obb_rows, masks, probs, overlap_flag, overlap_score
 
 def get_prediction_results_with_img(model, img_path):
     script_dir = Path(__file__).parent.absolute()
