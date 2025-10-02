@@ -104,8 +104,9 @@ const IncidentListItem = ({ data, onPress }) => {
                         <VStack pl="$5">
                             <Icon as={BadgeAlert} size='lg' />
                             <Text bold={true} size='lg' >{"Инцидент №" + data.id}</Text>
-                            <Text size='md'>{"Инцидент №" + data.id}</Text>
-
+                            {data.comments != null ?
+                                <Text size='md'>{"Комментарий работника: " + data.comments}</Text> : <></>
+                            }
                         </VStack>
                     </HStack>
 
