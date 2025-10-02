@@ -8,6 +8,7 @@ import { getAllUsersRequest } from '../../../api/new/users/get_all_users'
 import { WORKER_ROLE } from '../../../api/new/register'
 import { getRequestWithRelations } from '../../../api/new/service_request/get_request_with_relations'
 import { REQUEST_IN_PROGRESS } from '../warehouse_employee_role/maintainance_request/RequestsListScreen'
+import alert from '../../../components/SimpleAlert'
 
 const EmployeeNumberScreen = ({ navigation }) => {
   var [tabNum, setTabNum] = useState("")
@@ -41,6 +42,8 @@ const EmployeeNumberScreen = ({ navigation }) => {
               navigation.navigate(TOOLS_SCANNER_ROUTE, { requestWithRelations: requestWithRelations })
             }
           })
+        } else {
+          alert("Ошибка", "Не обнаружена заявка на техническое обслуживание. Обратитесь к сотруднику склада")
         }
 
       },

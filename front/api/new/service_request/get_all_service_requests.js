@@ -17,7 +17,7 @@ export const getAllServiceRequests = async ({
             params: {
                 skip: 0,
                 limit: 1000,
-                aviation_engineer: workerId,
+                aviation_engineer_id: workerId,
             }
         }
     )
