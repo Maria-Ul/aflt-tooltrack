@@ -1,12 +1,28 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
+from enum import Enum
 from datetime import datetime
+
+class ToolClass(str, Enum):
+    """Классы инструментов"""
+    BOKOREZY = "BOKOREZY"
+    KEY_ROZGKOVY_NAKIDNOY_3_4 = "KEY_ROZGKOVY_NAKIDNOY_3_4"
+    KOLOVOROT = "KOLOVOROT"
+    OTKRYVASHKA_OIL_CAN = "OTKRYVASHKA_OIL_CAN"
+    OTVERTKA_MINUS = "OTVERTKA_MINUS"
+    OTVERTKA_OFFSET_CROSS = "OTVERTKA_OFFSET_CROSS"
+    OTVERTKA_PLUS = "OTVERTKA_PLUS"
+    PASSATIGI = "PASSATIGI"
+    PASSATIGI_CONTROVOCHNY = "PASSATIGI_CONTROVOCHNY"
+    RAZVODNOY_KEY = "RAZVODNOY_KEY"
+    SHARNITSA = "SHARNITSA"
 
 # ToolSet схемы
 class ToolTypeBase(BaseModel):
     name: str = Field(..., example="Отвертка крестовая", description="Название типа инструмента или категории")
     category_id: Optional[int] = Field(None, example=1, description="ID родительской категории")
     is_item: bool = Field(..., example=True, description="True если это конкретный инструмент, False если категория")
+    tool_class: Optional[ToolClass] = Field(None, example=ToolClass.OTVERTKA_PLUS, description="Класс инструмента (только для инструментов)")
 
 class ToolType(ToolTypeBase):
     id: int = Field(..., example=1, description="ID типа инструмента")
