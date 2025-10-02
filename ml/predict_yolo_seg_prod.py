@@ -1,16 +1,28 @@
-from pathlib import Path
+import re
 import gc
 import warnings
+from pathlib import Path
 
 import torch
 from ultralytics import YOLO
+from paddleocr import PaddleOCR
 
 import cv2
 import numpy as np
-# import math
 
-from paddleocr import PaddleOCR
-import re
+RU_NAME_BY_EN = {
+    "bokorezy": "Бокорезы",
+    "key_rozgkovy_nakidnoy_3_4": "Ключ рожковый/накидной 3/4",
+    "kolovorot": "Коловорот",
+    "otkryvashka_oil_can": "Открывашка для банок с маслом",
+    "otvertka_minus": "Отвертка минус",
+    "otvertka_offset_cross": "Отвертка на смещенный крест",
+    "otvertka_plus": "Отвертка плюс",
+    "passatigi": "Пассатижи",
+    "passatigi_controvochny": "Пассатижи контровочные",
+    "razvodnoy_key": "Разводной ключ",
+    "sharnitsa": "Шэрница",
+}
 
 def free_memory():
     gc.collect()
@@ -256,12 +268,14 @@ class SegmentModel:
         mask_alpha=0.35,
         draw_mask_contours=True,
         mask_contour_thickness=1,
-        text_scale=0.6,
+        text_scale=1.0,
         text_thickness=1,
         text_bg_alpha=0.55,
         mask_fill_lighter=False,     # осветлять заливку масок (тот же оттенок, выше V, ниже S)
         mask_s_mul=0.90,             
-        mask_v_mul=1.35              
+        mask_v_mul=1.35,
+        auto_scale_labels=True, 
+        ref_size=640,                         
     ):
         if self.r is None:
             raise RuntimeError("Сначала вызовите predict_image(...)")
@@ -272,7 +286,22 @@ class SegmentModel:
         img = base_img.copy()
         h, w = img.shape[:2]
 
-        names = getattr(self.r, "names", None) or getattr(self.model, "names", None) or {}
+        # --- вычисляем коэффициент масштабирования ---
+        k = self._compute_label_scale(w, h, ref=ref_size) if auto_scale_labels else 1.0
+        # Можно чуть “приглушить” линии, чтобы не становились слишком толстыми на 5-8k
+        k_line = k * 0.5
+        k_contour = k * 0.5
+
+        font_scale = float(text_scale) * k
+        font_th = max(1, int(round(text_thickness * k)))
+        line_th = max(1, int(round(line_thickness * k_line)))
+        contour_th = max(1, int(round(mask_contour_thickness * k_contour)))
+        pad_px = max(2, int(round(4 * k)))  # внутренние отступы плашки
+
+
+        names_raw = getattr(self.r, "names", None) or getattr(self.model, "names", None) or {}
+        id2disp = self._resolve_display_names(names_raw)
+        
         boxes = getattr(self.r, "boxes", None)
         confs = getattr(boxes, "conf", None)
         cls_tensor = getattr(boxes, "cls", None)
@@ -293,9 +322,16 @@ class SegmentModel:
         for i in range(n_inst):
             cls_id = cls_ids[i] if i < len(cls_ids) else -1
             prob = float(confs[i].item()) if (confs is not None and i < len(confs)) else None
-            name = names.get(cls_id, str(cls_id)) if isinstance(names, dict) else (
-                names[cls_id] if isinstance(names, (list, tuple)) and 0 <= cls_id < len(names) else str(cls_id)
-            )
+            
+            # внутри цикла
+            if isinstance(names_raw, dict):
+                en_name = names_raw.get(cls_id, str(cls_id))
+            elif isinstance(names_raw, (list, tuple)):
+                en_name = names_raw[cls_id] if 0 <= cls_id < len(names_raw) else str(cls_id)
+            else:
+                en_name = str(cls_id)
+
+            name = id2disp.get(cls_id, en_name) 
             label = f"{name} {prob:.2f}" if prob is not None else f"{name}"
     
             base_color = self._color_for_class(cls_id)
@@ -304,7 +340,7 @@ class SegmentModel:
             # Полигон(ы) данного инстанса в пикселях оригинального изображения
             polys_px = self._get_instance_polygons_px(i, h, w)
 
-            # 1) Маска по полигонам (идеально совпадает с полигонами/OBB)
+            # 1) Маска по полигонам 
             m_bin = np.zeros((h, w), dtype=np.uint8)
             for poly in polys_px:
                 if poly.shape[0] >= 3:
@@ -313,11 +349,11 @@ class SegmentModel:
             if m_bool.any():
                 self._alpha_blend_mask_inplace(img, m_bool, fill_color, alpha=mask_alpha)
 
-            # 2) Контур полигонов (опционально)
+            # 2) Контур полигонов 
             if draw_mask_contours and mask_contour_thickness > 0:
                 for poly in polys_px:
                     if poly.shape[0] >= 2:
-                        cv2.polylines(img, [np.round(poly).astype(np.int32)], True, base_color, mask_contour_thickness, cv2.LINE_AA)
+                        cv2.polylines(img, [np.round(poly).astype(np.int32)], True, base_color, contour_th, cv2.LINE_AA)
 
             # 3) OBB по всем точкам полигонов
             pts_all = np.vstack([p for p in polys_px if p.shape[0] >= 3]) if len(polys_px) else None
@@ -326,7 +362,7 @@ class SegmentModel:
             rect = cv2.minAreaRect(pts_all.astype(np.float32))
             box = cv2.boxPoints(rect)
             box = self._order_box_points(box)
-            cv2.polylines(img, [box.astype(np.int32)], True, base_color, line_thickness, cv2.LINE_AA)
+            cv2.polylines(img, [box.astype(np.int32)], True, base_color, line_th, cv2.LINE_AA)
 
             tl, tr, br, bl = box  # порядок из _order_box_points
             anchor = (int(bl[0]), int(bl[1]))  # нижний левый угол
@@ -336,9 +372,9 @@ class SegmentModel:
                 anchor=anchor,
                 bg_color=base_color,           # тот же цвет, что и у рамки
                 text_color=(255, 255, 255),    # белый шрифт
-                font_scale=text_scale,         # можно сделать крупнее, напр. 0.9–1.1
-                thickness=text_thickness,      # толщина шрифта, напр. 2
-                pad=4,                         # внутренние отступы плашки
+                font_scale=font_scale,         # можно сделать крупнее, напр. 0.9–1.1
+                thickness=font_th,      # толщина шрифта, напр. 2
+                pad=pad_px,                         # внутренние отступы плашки
                 bg_alpha=text_bg_alpha         # 1.0 = непрозрачно, можно оставить как есть
             )            
 
@@ -351,6 +387,86 @@ class SegmentModel:
         return img
     
     ### helpers#####
+
+    def set_display_names(self, names):
+        """
+        Задать отображаемые имена классов.
+        names:
+        - list/tuple длиной C (по id)
+        - dict[int->str] (по id)
+        - dict[str_en->str_display] (по тренировочному имени -> отображаемое)
+        """
+        self._display_names = names
+
+    def _to_id_name_dict(self, names_obj):
+        """
+        Превращает модельные имена (list/tuple/dict) в dict[id->name_str].
+        """
+        id2name = {}
+        if names_obj is None:
+            return id2name
+        try:
+            if isinstance(names_obj, dict):
+                for k, v in names_obj.items():
+                    try:
+                        idx = int(k)
+                    except Exception:
+                        continue
+                    id2name[idx] = str(v)
+            elif isinstance(names_obj, (list, tuple)):
+                for idx, v in enumerate(names_obj):
+                    id2name[idx] = str(v)
+        except Exception:
+            pass
+        return id2name
+
+    def _resolve_display_names(self, names_obj):
+        """
+        Возвращает dict[id->display_name] с учетом:
+        1) явной переустановки self._display_names (list/tuple/dict),
+        2) карты RU_NAME_BY_EN (если имена модели на английском),
+        3) иначе — возврат исходных имен модели.
+        """
+        # 1) Если пользователь задал свои имена
+        disp = getattr(self, "_display_names", None)
+        if disp is not None:
+            if isinstance(disp, (list, tuple)):
+                return {i: str(n) for i, n in enumerate(disp)}
+            if isinstance(disp, dict):
+                # dict по id
+                has_int_keys = any(isinstance(k, int) or (isinstance(k, str) and k.isdigit()) for k in disp.keys())
+                if has_int_keys:
+                    out = {}
+                    for k, v in disp.items():
+                        try:
+                            out[int(k)] = str(v)
+                        except Exception:
+                            pass
+                    return out
+                # dict по английским именам
+                id2en = self._to_id_name_dict(names_obj)
+                return {i: str(disp.get(en, en)) for i, en in id2en.items()}
+
+        # 2) Пытаемся применить встроенную карту EN->RU
+        id2en = self._to_id_name_dict(names_obj)
+        if id2en:
+            id2ru = {i: RU_NAME_BY_EN.get(en, en) for i, en in id2en.items()}
+            return id2ru
+
+        # 3) Фолбэк — пусто (будем брать str(cls_id))
+        return {}
+
+    def _compute_label_scale(self, w: int, h: int, ref: int = 640, min_k: float = 0.7, max_k: float = 3.0) -> float:
+        """
+        Масштаб для шрифтов/толщин по размеру изображения.
+        Берём геометрическое среднее сторон относительно ref (обычно 640), чтобы быть устойчивым к соотношению сторон.
+        """
+        k = ((w * h) ** 0.5) / float(ref)
+        if k < min_k:
+            return float(min_k)
+        if k > max_k:
+            return float(max_k)
+        return float(k)
 
     def _draw_label_box(
         self,
@@ -370,7 +486,8 @@ class SegmentModel:
         """
         x, y = int(anchor[0]), int(anchor[1])
         H, W = img_bgr.shape[:2]
-        font = cv2.FONT_HERSHEY_SIMPLEX
+        # font = cv2.FONT_HERSHEY_SIMPLEX
+        font = cv2.FONT_HERSHEY_COMPLEX
 
         (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
         # прямоугольник под текст: отступы pad
