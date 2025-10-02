@@ -287,7 +287,6 @@ class SegmentModel:
 
         # --- вычисляем коэффициент масштабирования ---
         k = self._compute_label_scale(w, h, ref=ref_size) if auto_scale_labels else 1.0
-        # Можно чуть “приглушить” линии, чтобы не становились слишком толстыми на 5-8k
         k_line = k 
         k_contour = k 
 
