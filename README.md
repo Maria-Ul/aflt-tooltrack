@@ -14,7 +14,7 @@
 
 Цель — **сокращение времени на рутинные операции**, снижение риска ошибок и упрощение контроля качества.
 ***
-Установка и запуск
+## Установка и запуск
 
 **1. Локальный запуск**
 
@@ -62,4 +62,13 @@ Swagger UI: доступен по /docs после запуска сервиса
 | /api/files/predict/single | Получение архива с результатом обработки для одного входного фото |
 | /api/files/predict/batch | Получение архива с результатом обработки для входного ZIP архива фото |
 
+## Стек технологий
 
+### Frontend: 
+JS, React Native, gluestack- ui, axios, expo-camera, react-navigation 
+
+### Backend: 
+python, PostgreSql, Rest  API, Websocket
+
+### ML: 
+opencv, torch, ultralytics, openMM, paddleOCR
