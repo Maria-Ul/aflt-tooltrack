@@ -1,12 +1,11 @@
-import { FlatList, StyleSheet } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { ButtonText, Card, Heading, HStack, ScrollView, Text, Button, Center, Icon, AddIcon, EditIcon, VStack, Divider, Box, Input, InputField, InputSlot, InputIcon, SearchIcon, TrashIcon } from '@gluestack-ui/themed'
-import { AIRCRAFT_CREATE_ROUTE, REQUEST_CREATE_ROUTE, REQUEST_DETAILS_ROUTE } from '../../Screens'
-import { getAllAircraftsRequest } from '../../../../api/new/aircraft/get_all_aircrafts'
-import { BoltIcon, Construction, ConstructionIcon, HardHat, Plane } from 'lucide-react-native'
-import { getAllServiceRequests } from '../../../../api/new/service_request/get_all_service_requests'
-import { TouchableOpacity } from 'react-native'
+import { AddIcon, Box, Button, ButtonText, Card, Center, Divider, Heading, HStack, Icon, Input, InputField, InputIcon, InputSlot, ScrollView, SearchIcon, Text, TrashIcon, VStack } from '@gluestack-ui/themed'
+import { BoltIcon } from 'lucide-react-native'
+import { useEffect, useState } from 'react'
+import { FlatList, StyleSheet, TouchableOpacity } from 'react-native'
 import { deleteServiceRequest } from '../../../../api/new/service_request/delete_service_request'
+import { getAllServiceRequests } from '../../../../api/new/service_request/get_all_service_requests'
+import { updateServiceRequest } from '../../../../api/new/service_request/update_service_request'
+import { REQUEST_CREATE_ROUTE, REQUEST_DETAILS_ROUTE } from '../../Screens'
 
 export const REQUEST_CREATED = "CREATED"
 export const REQUEST_IN_PROGRESS = "IN_PROGRESS"
@@ -46,6 +45,35 @@ const RequestsListScreen = ({ navigation }) => {
 
   const onPressRequest = (serviceRequest) => {
     navigation.navigate(REQUEST_DETAILS_ROUTE, { requestId: serviceRequest.id })
+  }
+
+  const onIncidentAction = (request) => {
+    switch (request.status) {
+      // case REQUEST_IN_PROGRESS:
+      //   getRequestWithRelations({
+      //     request_id: request.id,
+      //     onSuccess: (data) => {
+      //       console.log(data)
+      //       navigation.navigate(WORKERS_PIPELINE_ROLE)
+      //       navigation.navigate(TOOLS_SCANNER_ROUTE, {
+      //         request_with_relations: data,
+      //       })
+      //     }
+      //   })
+      //   break;
+      case REQUEST_CREATED: onGiveToolsClick(request); break;
+    }
+  }
+
+  const onGiveToolsClick = (request) => {
+    updateServiceRequest({
+      request_id: request.id,
+      aviation_engineer_id: request.aviation_engineer_id,
+      tool_set_id: request.tool_set_id,
+      status: REQUEST_IN_PROGRESS,
+      description: request.description,
+      onSuccess: () => { loadServiceRequests() }
+    })
   }
 
   useEffect(() => {
@@ -89,7 +117,7 @@ const RequestsListScreen = ({ navigation }) => {
               ({ item, index, separators }) => {
                 return <RequestListItem
                   data={item}
-                  onAction={() => { }}
+                  onAction={onIncidentAction}
                   onPress={onPressRequest.bind(null, item)}
                   onDelete={onDeleteRequest.bind(null, item.id)}
                 />
@@ -118,7 +146,9 @@ const RequestListItem = ({ data, onAction, onPress, onDelete }) => {
     case REQUEST_IN_PROGRESS: statusText = "В РАБОТЕ";
       buttonAction = "positive"
       buttonTExt = "Начать приемку инструментов"
-      bgColor = "orange"; break;
+      bgColor = "orange"; 
+      // TODO разобраться с навигацией на флоу сканирования
+      showButton = false;  break;
     case REQUEST_COMPLETED: statusText = "ЗАВЕРШЕНА";
       buttonAction = "positive"
       buttonTExt = ""
@@ -146,7 +176,7 @@ const RequestListItem = ({ data, onAction, onPress, onDelete }) => {
           <VStack space="md">
             <RequestStatusBadge status={data.status} />
             {showButton ?
-              <Button action={buttonAction} onPress={onAction}>
+              <Button action={buttonAction} onPress={onAction.bind(null, data)}>
                 <ButtonText >{buttonTExt}</ButtonText>
               </Button> : <></>
             }
