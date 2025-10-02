@@ -286,7 +286,6 @@ class SegmentModel:
 
         # --- вычисляем коэффициент масштабирования ---
         k = self._compute_label_scale(w, h, ref=ref_size) if auto_scale_labels else 1.0
-        # Можно чуть “приглушить” линии, чтобы не становились слишком толстыми на 5-8k
         k_line = k 
         k_contour = k 
 
@@ -625,8 +624,8 @@ class SegmentModel:
 
 
 if __name__ == "__main__":
-    img_path = "datasets/group_overlapping_classifier_dataset/test/photo_2025-10-02_15-35-06.jpg"
-    # img_path = "data/Групповые/DSCN4946.JPG"
+    # img_path = "datasets/group_overlapping_classifier_dataset/test/photo_2025-10-02_15-35-06.jpg"
+    img_path = "data/Групповые/DSCN4946.JPG"
     model = SegmentModel(
         model_path="ml/weights/yolo11s-seg-tools.pt",
         conf_threshold=0.5,
