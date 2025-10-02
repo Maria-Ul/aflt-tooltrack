@@ -156,6 +156,7 @@ const RequestListItem = ({ data, onAction, onPress, onDelete }) => {
     case REQUEST_INCIDENT: statusText = "ИНЦИДЕНТ";
       buttonAction = "neagtive"
       buttonTExt = "Перейти к инциденту"
+      showButton = false
       bgColor = "red"; break;
   }
 

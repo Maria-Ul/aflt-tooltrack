@@ -98,6 +98,8 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     const [isShowMessAlert, setIsShowMessAlert] = useState(false)
     const [isShowSuccessAlert, setIsShowSuccessModal] = useState(false)
 
+    const [sendFrames, setSendFrames] = useState(true)
+
     const [boxes, setBoxes] = useState([])
     const [paths, setPaths] = useState([])
     const [classes, setClasses] = useState([])
@@ -121,30 +123,32 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const captureFrame = useCallback(async () => {
         //console.log("CAPTURE" + cameraRef.current + "-" + isStreaming)
-        try {
-            const options = {
-                quality: 0.9,
-                base64: true,
-                width: 640,
-                height: 480
-            };
+        if (sendFrames) {
+            try {
+                const options = {
+                    quality: 0.9,
+                    base64: true,
+                    width: 640,
+                    height: 480
+                };
 
-            const data = await cameraRef.current.takePictureAsync(options);
+                const data = await cameraRef.current.takePictureAsync(options);
 
-            if (socketRef.current) {
-                var frameJs = `{
+                if (socketRef.current) {
+                    var frameJs = `{
                     "type": "video_frame",
                     "timestamp": ${Date.now()},
                     "frame": "${data.base64}"
                 }`
-                //console.log(frameJs)
+                    //console.log(frameJs)
 
-                socketRef.current.send(frameJs)
+                    socketRef.current.send(frameJs)
+                }
+            } catch (error) {
+                console.log('Ошибка захвата кадра:', error);
             }
-        } catch (error) {
-            console.log('Ошибка захвата кадра:', error);
         }
-    }, [socketRef])
+    }, [socketRef, sendFrames])
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
@@ -204,28 +208,34 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     //     "timestamp": 1759332023.89741,
     //     "type": "frame_received"
     // }
-    const onDetectionEvent = (event) => {
-        const nBoxes = event.obb_rows
-        const classes = event.classes
-        const probs = event.probs
-        setIsShowMessAlert(event.overlap_flag)
-        console.log(event)
+    const onDetectionEvent = useCallback((event) => {
+        const eventData = JSON.parse(event.data)
+        const nBoxes = eventData.obb_rows
+        const classes = eventData.classes
+        const probs = eventData.probs
+        setIsShowMessAlert(eventData.overlap_flag)
+        console.log(eventData)
         if (nBoxes != null) {
+            console.log("SUCCESS", toolkitWithRelations != null)
             //console.log(nBoxes)
-            setIsShowSuccessModal(probs.length == classColorsMap.length &&
-                probs.every(p => p > CONFIDENCE_THRESHOLD))
+            if (toolkitWithRelations != null) {
+                const success = probs.length == toolkitWithRelations.tool_set_type.tool_types.length &&
+                    probs.every(p => p > CONFIDENCE_THRESHOLD)
+                console.log("SUCCESS", success)
+                setIsShowSuccessModal(success)
+            }
             var oBoxes = []
             nBoxes.forEach((b, index, a) => {
-                const classNum = nBoxes[index][0]
+                const classNum = b[0]
                 oBoxes.push({
-                    x1: 1 - nBoxes[index][1],
-                    y1: nBoxes[index][2],
-                    x2: 1 - nBoxes[index][3],
-                    y2: nBoxes[index][4],
-                    x3: 1 - nBoxes[index][5],
-                    y3: nBoxes[index][6],
-                    x4: 1 - nBoxes[index][7],
-                    y4: nBoxes[index][8],
+                    x1: 1 - b[1],
+                    y1: b[2],
+                    x2: 1 - b[3],
+                    y2: b[4],
+                    x3: 1 - b[5],
+                    y3: b[6],
+                    x4: 1 - b[7],
+                    y4: b[8],
                 }
                 )
             })
@@ -234,14 +244,16 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             setClasses(classes)
             setProbs(probs)
         }
-    }
+    }, [toolkitWithRelations])
 
     const onModalFinishClick = useCallback((comment) => {
         if (isShowSuccessAlert) {
+            setSendFrames(false)
             completeServiceRequest({
                 request_id: requestWithRelations.id,
                 onSuccess: () => {
                     navigation.navigate(EMPLOYEE_NUMBER_ROUTE)
+                    alert("Заявка переведена в статус ЗАВЕРШЕНА")
                 }
             })
         } else {
@@ -254,20 +266,18 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                 },
                 onError: () => {
                     console.log("ERROR")
-                    
-                    alert("Внимание!", "В системе нет специалистов контроля качества для" + 
+
+                    alert("Внимание!", "В системе нет специалистов контроля качества для" +
                         "назначения инцидентов или инцидент для данной заявки уже создан")
                 }
             })
         }
     }, [isShowSuccessAlert, requestWithRelations])
 
+
     useEffect(() => {
         console.log("USE_EFFECT")
         socketRef.current = new WebSocket(WEB_SOCKET_URL + "/api/ws/video") //io("ws://localhost:8000/ws/video")
-        socketRef.current.onmessage = (event) => {
-            onDetectionEvent(JSON.parse(event.data))
-        }
         return () => {
             if (socketRef.current) {
                 //socketRef.current.disconnect();
@@ -279,6 +289,9 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             stopStream()
         };
     }, []);
+    useEffect(() => {
+        socketRef.current.onmessage = onDetectionEvent
+    }, [toolkitWithRelations])
 
 
     // if (!permission) {
@@ -408,7 +421,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                                 style={{
                                     position: 'absolute',
                                     top: 0,
-                                    right: 0,
+                                    right: "500px",
                                 }}
                             /> : <></>}
                         </View>
@@ -557,7 +570,7 @@ const SuccessAlert = ({ style }) => {
         <HStack style={style} p="$3" space='md' bgColor='#94f794ff'
             borderWidth="2px" borderColor='#2fff00ff' alignItems='center'>
             <Icon as={CheckIcon} size='xl' />
-            <Text size="lg" bold="true">{`Все инструменты из набора распознаны\nМожно завершить приемка`}</Text>
+            <Text size="lg" bold="true">{`Все инструменты из набора распознаны\nМожно завершить приемку`}</Text>
         </HStack>
     )
 }
