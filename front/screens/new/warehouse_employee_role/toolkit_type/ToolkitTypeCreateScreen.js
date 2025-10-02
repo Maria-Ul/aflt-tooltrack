@@ -106,7 +106,7 @@ const ToolkitTypeCreateScreen = ({ route, navigation }) => {
                 <Button action='positive' onPress={onAddToolkitType}>
 
                   <ButtonText>{
-                    toolkitType != null ? "Изменить тип набора" : "Добавить тип набора" 
+                    toolkitType != null ? "Изменить тип набора" : "Добавить тип набора"
                   }</ButtonText>
                 </Button>
               </VStack>
@@ -179,19 +179,16 @@ const ToolTypePickerItem = ({
           <Text>{data.name}</Text>
         </HStack>
         <HStack alignItems='center'>
-          <Button action='positive' onPress={onAddTool.bind(null, data.id)} mr="$3">
-            <Icon as={AddIcon} color="white" />
-          </Button>
           {toolsCount == 0 ?
-            <></>
-            :
+            <Button action='positive' onPress={onAddTool.bind(null, data.id)} mr="$3">
+              <Icon as={AddIcon} color="white" />
+            </Button> :
             <HStack alignItems='center'>
               <Text mr="$3">{toolsCount}</Text>
               <Button action='negative' onPress={onRemoveTool.bind(null, data.id)}>
                 <Icon as={MinusIcon} color="white" />
               </Button>
-            </HStack>
-          }
+            </HStack>}
         </HStack>
       </HStack>
       <Divider />

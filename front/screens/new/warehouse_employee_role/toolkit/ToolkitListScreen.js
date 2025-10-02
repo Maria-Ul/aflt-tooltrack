@@ -28,6 +28,10 @@ const ToolkitListScreen = ({ navigation }) => {
     })
   }
 
+  navigation.addListener('focus', () => {
+      loadToolkits()
+  });
+
   const onAddClick = () => {
     navigation.navigate(TOOLKIT_CREATE_ROUTE, { toolkit: null })
   }

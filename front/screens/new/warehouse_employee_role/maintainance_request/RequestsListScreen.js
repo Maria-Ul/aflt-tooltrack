@@ -17,6 +17,10 @@ const RequestsListScreen = ({ navigation }) => {
   var [searchResult, setSearchResult] = useState(null)
   var [searchQuery, setSearchQuery] = useState("")
 
+  navigation.addListener('focus', () => {
+      loadServiceRequests()
+  });
+
   const loadServiceRequests = () => {
     getAllServiceRequests({
       onSuccess: (data) => {

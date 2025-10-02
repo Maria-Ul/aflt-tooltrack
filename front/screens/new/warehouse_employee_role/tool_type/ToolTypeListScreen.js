@@ -10,6 +10,10 @@ const ToolTypeListScreen = ({ navigation }) => {
   var [searchResult, setSearchResult] = useState(null)
   var [searchQuery, setSearchQuery] = useState("")
 
+  navigation.addListener('focus', () => {
+      loadToolTypeTree()
+  });
+
   const loadToolTypeTree = () => {
     getToolTypeTree({
       onSuccess: (data) => {

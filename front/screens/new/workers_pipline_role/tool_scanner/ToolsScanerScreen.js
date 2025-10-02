@@ -1,16 +1,51 @@
-import { Button, ButtonText, Card, Center, CheckIcon, Divider, Heading, HStack, Icon, ScrollView, Text, View, VStack } from '@gluestack-ui/themed'
+import { Box, Button, ButtonText, Card, Center, CheckIcon, Divider, Heading, HStack, Icon, ScrollView, View, VStack } from '@gluestack-ui/themed'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { getDocumentAsync } from 'expo-document-picker'
 import { TriangleAlertIcon } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, StyleSheet } from 'react-native'
-import Svg, { Polyline } from 'react-native-svg'
+import Svg, { Polyline, Text } from 'react-native-svg'
 import { getToolkitWithTools } from '../../../../api/new/tool_sets/get_tool_set_with_tools'
 import ResultModal from './ResultModal'
 import ToolItem from './ToolItem'
 import { BACKEND_URL, WEB_SOCKET_URL } from '../../../../api/baseApi'
 import { sendImageToPredictRequest } from '../../../../api/new/send_image/send_image_to_predict'
 import { sendZipToPredictRequest } from '../../../../api/new/send_image/send_zip_to_predict'
+import { BOKOREZY_CLASS } from '../../warehouse_employee_role/tool_type/ToolTypeCreateScreen'
+
+const classesRusNames = new Map(Object.entries(
+    {
+        BOKOREZY: "Бокорезы",
+        PASSATIGI: "Пассатижи",
+        SHARNITSA: "Шэрница",
+        KOLOVOROT: "Коловорот",
+        RAZVODNOY_KEY: "Разводной ключ",
+        PASSATIGI_CONTROVOCHNY: "Пассатижи центровочные",
+        KEY_ROZGKOVY_NAKIDNOY_3_4: "Ключ рожковый/накидной 3/4",
+        OTVERTKA_PLUS: "Отвертка +",
+        OTVERTKA_MINUS: "Отвертка -",
+        OTVERTKA_OFFSET_CROSS: "Отвертка на смещенный крест",
+        OTKRYVASHKA_OIL_CAN: "Открывашка для банок с маслом",
+    }
+))
+
+const colorsArr = [
+    "#594f32",
+    "#a677af",
+    "#555787",
+    "#383d0c",
+    "#898979",
+    "#563d96",
+    "#84013e",
+    "#576655",
+    "#713bd6",
+    "#3f8c2c",
+    "#15261c",
+    "#999ed8",
+    "#83c9ef",
+    "#0b0219",
+    "#181919",
+]
 
 // использовать Grid
 const ToolsScanerScreen = ({ route, navigation }) => {
@@ -40,10 +75,11 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     const [height, setHeight] = useState(0)
 
     const [isShowMessAlert, setIsShowMessAlert] = useState(false)
+    const [isShowSuccessAlert, setIsShowSuccessModal] = useState(true)
 
     const [boxes, setBoxes] = useState([])
-
     const [paths, setPaths] = useState([])
+    const [classes, setClasses] = useState([])
 
     useEffect(() => {
         setPaths(boxes.map(
@@ -90,7 +126,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
-        streamIntervalRef.current = setInterval(captureFrame, 500); // 5 FPS
+        streamIntervalRef.current = setInterval(captureFrame, 1000); 
     }, [captureFrame])
 
     const stopStream = () => {
@@ -170,6 +206,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             })
             console.log(oBoxes)
             setBoxes(oBoxes)
+            setClasses(classes)
         }
     }
 
@@ -282,18 +319,27 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             height={`${height}px`}
                             width={`${width}px`}
                         >
-                            {paths.map(p => {
+                            {paths.map((p, index) => {
                                 return (
-                                    <Polyline
-                                        points={p}
-                                        fill="#ff23234f"
-                                        stroke={"red"}
-                                        strokeWidth="2px"
-                                    />
+                                    <>
+                                        <Polyline
+                                            fill="transparent"
+                                            points={p}
+                                            stroke={colorsArr[index]}
+                                            strokeWidth="2px"
+                                        />
+                                    </>
                                 )
                             })}
                         </Svg>
                         {isShowMessAlert ? <MessAlert
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                            }}
+                        /> : <></>}
+                        {isShowSuccessAlert ? <SuccessAlert
                             style={{
                                 position: 'absolute',
                                 top: 0,

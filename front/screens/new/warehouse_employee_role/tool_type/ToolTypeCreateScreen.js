@@ -24,19 +24,31 @@ import { getToolTypeTree } from '../../../../api/new/tool_types/get_tool_type_tr
 import { deleteToolTypeRequest } from '../../../../api/new/tool_types/delete_tool_type'
 import { CrossIcon, Folder, FolderOpen, FolderPlus, PlusIcon, Wrench, X } from 'lucide-react-native'
 
+export const BOKOREZY_CLASS = "BOKOREZY"
+export const PASSATIGI_CLASS = "PASSATIGI"
+export const SHARNITSA_CLASS = "SHARNITSA"
+export const KOLOVOROT_CLASS = "KOLOVOROT"
+export const RAZVODNOY_KEY_CLASS = "RAZVODNOY_KEY"
+export const PASSATIGI_CONTROVOCHNY = "PASSATIGI_CONTROVOCHNY"
+export const KEY_ROZGKOVY_NAKIDNOY_3_4 = "KEY_ROZGKOVY_NAKIDNOY_3_4"
+export const OTVERTKA_PLUS = "OTVERTKA_PLUS"
+export const OTVERTKA_MINUS = "OTVERTKA_MINUS"
+export const OTVERTKA_OFFSET_CROSS = "OTVERTKA_OFFSET_CROSS"
+export const OTKRYVASHKA_OIL_CAN = "OTKRYVASHKA_OIL_CAN"
+
 const ToolTypeCreateScreen = ({ navigation }) => {
     var [cvClassesList, setCvClassesList] = useState([
-        "PASSATIGI",
-        "OTKRYVASHKA_OIL_CAN",
-        "BOKOREZY",
-        "SHARNITSA",
-        "KOLOVOROT",
-        "RAZVODNOY_KEY",
-        "PASSATIGI_CONTROVOCHNY",
-        "KEY_ROZGKOVY_NAKIDNOY_3_4",
-        "OTVERTKA_PLUS",
-        "OTVERTKA_MINUS",
-        "OTVERTKA_OFFSET_CROSS"])
+        PASSATIGI_CLASS,
+        OTKRYVASHKA_OIL_CAN,
+        BOKOREZY_CLASS,
+        SHARNITSA_CLASS,
+        KOLOVOROT_CLASS,
+        RAZVODNOY_KEY_CLASS,
+        PASSATIGI_CONTROVOCHNY,
+        KEY_ROZGKOVY_NAKIDNOY_3_4,
+        OTVERTKA_PLUS,
+        OTVERTKA_MINUS,
+        OTVERTKA_OFFSET_CROSS])
     var [toolTypeTree, setToolTypeTree] = useState(null)
     var [searchResult, setSearchResult] = useState(null)
     var [searchQuery, setSearchQuery] = useState("")
