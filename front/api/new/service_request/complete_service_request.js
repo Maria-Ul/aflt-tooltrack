@@ -9,6 +9,7 @@ export const completeServiceRequest = async ({
     const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
     var response = await afltToolscanApi.put(
         url = `/api/maintenance-requests/${request_id}/complete`,
+        data = {},
         {
             headers: {
                 'Authorization': "Bearer " + sessionToken

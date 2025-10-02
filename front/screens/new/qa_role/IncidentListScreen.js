@@ -1,5 +1,5 @@
 import { Box, Card, Center, Divider, Heading, HStack, Icon, Input, InputField, InputIcon, InputSlot, ScrollView, SearchIcon, Text, VStack } from '@gluestack-ui/themed'
-import { BoltIcon } from 'lucide-react-native'
+import { BadgeAlert, BoltIcon } from 'lucide-react-native'
 import { useEffect, useState } from 'react'
 import { FlatList, StyleSheet, TouchableOpacity } from 'react-native'
 import { getAllIncidentsRequest, getAllIncidentsRequeszt } from '../../../api/new/incident/get_all_incidents'
@@ -69,7 +69,7 @@ const IncidentsListScreen = ({ navigation }) => {
                                         return <IncidentListItem
                                             data={item}
                                             onAction={() => { }}
-                                            onPress={onPressRequest.bind(null, item)}
+                                            onPress={onPressIncident.bind(null, item)}
                                         />
                                     }
                                 }
@@ -100,11 +100,12 @@ const IncidentListItem = ({ data, onPress }) => {
             <TouchableOpacity onPress={onPress}>
                 <HStack justifyContent='space-between' alignItems='center' mb="$2">
                     <HStack>
-                        <Box h="$20" w="$5" bgColor={bgColor} />
+                        <Box h="$20" w="$5" bgColor="red" />
                         <VStack pl="$5">
-                            <Icon as={BoltIcon} size='lg' />
-                            <Text bold={true} size='lg' >{data.id}</Text>
-                            <Text size='md'>{"Заявка №" + data.id}</Text>
+                            <Icon as={BadgeAlert} size='lg' />
+                            <Text bold={true} size='lg' >{"Инцидент №" + data.id}</Text>
+                            <Text size='md'>{"Инцидент №" + data.id}</Text>
+
                         </VStack>
                     </HStack>
 

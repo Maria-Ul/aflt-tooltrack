@@ -1,6 +1,6 @@
 import { StyleSheet } from 'react-native'
-import React, { useRef } from 'react'
-import { Button, ButtonText, CloseIcon, Heading, HStack, Icon, Modal, ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, Text, VStack } from '@gluestack-ui/themed'
+import React, { useCallback, useRef, useState } from 'react'
+import { Button, ButtonText, CloseIcon, Heading, HStack, Icon, Input, InputField, Modal, ModalBackdrop, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, Text, VStack } from '@gluestack-ui/themed'
 
 const ResultModal = ({
     isOpen,
@@ -9,7 +9,11 @@ const ResultModal = ({
     onContinueClick,
 }) => {
     const ref = useRef(null)
+    const [comment, setComment] = useState("")
 
+    const onCClick = useCallback(() => {
+        onContinueClick(comment)
+    }, [comment, onContinueClick])
     return (
         <Modal
             isOpen={isOpen}
@@ -35,15 +39,27 @@ const ResultModal = ({
                         <Text size='md'>
                             {
                                 isSuccessScan ? "Распознаны все инструменты из набора.\nЗавершить процедуру приемки?" :
-                                "Не все инструменты из набора обнаружены!\nБудет создан инцидент."
+                                    "Не все инструменты из набора обнаружены!\nБудет создан инцидент."
                             }
                         </Text>
+
+                        {
+                            !isSuccessScan ?
+                                <Input >
+                                    <InputField
+                                        value={comment}
+                                        onChangeText={setComment}
+                                        placeholder="Введите краткое описание проблемы" />
+                                </Input>
+                                : <></>
+                        }
+
                     </VStack>
                 </ModalBody>
                 <ModalFooter>
                     <HStack>
                         <Button
-                            onPress={onContinueClick}
+                            onPress={onCClick}
                             mr='$5'
                         >
                             <ButtonText>{

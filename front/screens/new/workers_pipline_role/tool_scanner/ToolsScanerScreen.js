@@ -13,6 +13,10 @@ import { sendImageToPredictRequest } from '../../../../api/new/send_image/send_i
 import { sendZipToPredictRequest } from '../../../../api/new/send_image/send_zip_to_predict'
 import { BOKOREZY_CLASS } from '../../warehouse_employee_role/tool_type/ToolTypeCreateScreen'
 import { CONFIDENCE_THRESHOLD } from '../../../../App'
+import { completeServiceRequest } from '../../../../api/new/service_request/complete_service_request'
+import { EMPLOYEE_NUMBER_ROUTE } from '../../Screens'
+import { markIncidentRequest } from '../../../../api/new/service_request/mark_incident_request'
+import alert from '../../../../components/SimpleAlert'
 
 // const classesRusNames = new Map(Object.entries(
 //     {
@@ -232,6 +236,32 @@ const ToolsScanerScreen = ({ route, navigation }) => {
         }
     }
 
+    const onModalFinishClick = useCallback((comment) => {
+        if (isShowSuccessAlert) {
+            completeServiceRequest({
+                request_id: requestWithRelations.id,
+                onSuccess: () => {
+                    navigation.navigate(EMPLOYEE_NUMBER_ROUTE)
+                }
+            })
+        } else {
+            markIncidentRequest({
+                request_id: requestWithRelations.id,
+                comment: comment,
+                onSuccess: () => {
+                    navigation.navigate(EMPLOYEE_NUMBER_ROUTE)
+                    alert("Внимание!", "Инцидент передан в работу службе контроля качества")
+                },
+                onError: () => {
+                    console.log("ERROR")
+                    
+                    alert("Внимание!", "В системе нет специалистов контроля качества для" + 
+                        "назначения инцидентов или инцидент для данной заявки уже создан")
+                }
+            })
+        }
+    }, [isShowSuccessAlert, requestWithRelations])
+
     useEffect(() => {
         console.log("USE_EFFECT")
         socketRef.current = new WebSocket(WEB_SOCKET_URL + "/api/ws/video") //io("ws://localhost:8000/ws/video")
@@ -383,8 +413,14 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             /> : <></>}
                         </View>
                     </View>
-                </Box >
+                </Box>
             </HStack >
+            <ResultModal
+                isOpen={isShowResultModal}
+                isSuccessScan={isShowSuccessAlert}
+                onClose={setIsShowResultModal.bind(null, false)}
+                onContinueClick={onModalFinishClick}
+            />
         </ScrollView >
         // <ScrollView>
         //     <HStack style={styles.container}>
