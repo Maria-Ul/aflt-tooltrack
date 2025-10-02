@@ -213,51 +213,51 @@ class SegmentModel:
         return getattr(self.r.masks, "xyn", None)
 
     def get_oriented_bboxes(self, normalized=True):
-            """
-            Возвращает список строк формата:
-                class_index x1 y1 x2 y2 x3 y3 x4 y4
-            Координаты по умолчанию в пикселях. Если normalized=True, то в [0,1].
+        """
+        Возвращает список строк формата:
+            class_index x1 y1 x2 y2 x3 y3 x4 y4
+        Координаты по умолчанию в пикселях. Если normalized=True, то в [0,1].
 
-            Требует, чтобы self.r был заполнен (после predict_image).
-            """
-            if self.r is None or getattr(self.r, "masks", None) is None:
+        Требует, чтобы self.r был заполнен (после predict_image).
+        """
+        if self.r is None or getattr(self.r, "masks", None) is None:
+            return []
+
+        h, w = self._get_img_hw()
+        polys_xy = getattr(self.r.masks, "xy", None)
+        if polys_xy is None:
+            # берем нормализованные полигоны и денормализуем
+            polys_xyn = getattr(self.r.masks, "xyn", None)
+            if polys_xyn is None:
                 return []
+            polys = [np.asarray(p, dtype=np.float32) * np.array([w, h], dtype=np.float32) for p in polys_xyn]
+        else:
+            polys = [np.asarray(p, dtype=np.float32) for p in polys_xy]
 
-            h, w = self._get_img_hw()
-            polys_xy = getattr(self.r.masks, "xy", None)
-            if polys_xy is None:
-                # берем нормализованные полигоны и денормализуем
-                polys_xyn = getattr(self.r.masks, "xyn", None)
-                if polys_xyn is None:
-                    return []
-                polys = [np.asarray(p, dtype=np.float32) * np.array([w, h], dtype=np.float32) for p in polys_xyn]
-            else:
-                polys = [np.asarray(p, dtype=np.float32) for p in polys_xy]
+        cls_tensor = getattr(getattr(self.r, "boxes", None), "cls", None)
+        cls_ids = [int(c.item()) for c in cls_tensor] if cls_tensor is not None else [-1] * len(polys)
 
-            cls_tensor = getattr(getattr(self.r, "boxes", None), "cls", None)
-            cls_ids = [int(c.item()) for c in cls_tensor] if cls_tensor is not None else [-1] * len(polys)
+        obb_rows = []
 
-            obb_rows = []
+        for i, poly in enumerate(polys):
+            if poly is None or len(poly) < 3:
+                continue
 
-            for i, poly in enumerate(polys):
-                if poly is None or len(poly) < 3:
-                    continue
+            rect = cv2.minAreaRect(poly)      # ((cx,cy), (w,h), angle)
+            box = cv2.boxPoints(rect)         # 4x2 float
+            box = self._order_box_points(box) # tl, tr, br, bl
 
-                rect = cv2.minAreaRect(poly)      # ((cx,cy), (w,h), angle)
-                box = cv2.boxPoints(rect)         # 4x2 float
-                box = self._order_box_points(box) # tl, tr, br, bl
+            if normalized:
+                box = box / np.array([w, h], dtype=np.float32)
 
-                if normalized:
-                    box = box / np.array([w, h], dtype=np.float32)
+            coords = box.reshape(-1).tolist()
+            if not normalized:
+                coords = [int(round(v)) for v in coords]
 
-                coords = box.reshape(-1).tolist()
-                if not normalized:
-                    coords = [int(round(v)) for v in coords]
+            row = [cls_ids[i]] + coords
+            obb_rows.append(row)
 
-                row = [cls_ids[i]] + coords
-                obb_rows.append(row)
-
-            return obb_rows
+        return obb_rows
 
     def visualize_oriented_bboxes(
         self,
@@ -480,7 +480,6 @@ class SegmentModel:
         """
         x, y = int(anchor[0]), int(anchor[1])
         H, W = img_bgr.shape[:2]
-        # font = cv2.FONT_HERSHEY_SIMPLEX
         font = cv2.FONT_HERSHEY_COMPLEX
 
         (tw, th), baseline = cv2.getTextSize(text, font, font_scale, thickness)
