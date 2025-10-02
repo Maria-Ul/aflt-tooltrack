@@ -337,8 +337,8 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             {permission == null || !permission.granted ?
                                 <Text style={{
                                     position: 'absolute',
-                                    top: '$4',
-                                    left: '$4',
+                                    top: '40px',
+                                    left: '40px',
                                 }} size='lg' bold={true}>Видео с веб-камеры недоступно</Text> : <></>}
 
                             <Svg style={{

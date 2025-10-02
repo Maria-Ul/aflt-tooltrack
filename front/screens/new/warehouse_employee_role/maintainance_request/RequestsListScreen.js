@@ -152,7 +152,7 @@ const RequestListItem = ({ data, onAction, onPress, onDelete }) => {
             }
             <Button action='negative' onPress={onDelete}>
               <Icon as={TrashIcon} color="white" />
-            </Button> : <></>
+            </Button>
           </VStack>
         </HStack>
       </TouchableOpacity>
