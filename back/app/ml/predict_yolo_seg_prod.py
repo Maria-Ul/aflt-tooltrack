@@ -293,11 +293,11 @@ class SegmentModel:
         k_line = k 
         k_contour = k 
 
-        font_scale = float(text_scale) * k
-        font_th = max(1, int(round(text_thickness * k)))
+        font_scale = float(text_scale) * (k / 3.0)
+        font_th = max(1, int(round(text_thickness * k)) - 1)
         line_th = max(1, int(round(line_thickness * k_line)))
         contour_th = max(1, int(round(mask_contour_thickness * k_contour)))
-        pad_px = max(2, int(round(4 * k)))  # внутренние отступы плашки
+        pad_px = max(2, int(round(4 * k)))
 
 
         names_raw = getattr(self.r, "names", None) or getattr(self.model, "names", None) or {}
