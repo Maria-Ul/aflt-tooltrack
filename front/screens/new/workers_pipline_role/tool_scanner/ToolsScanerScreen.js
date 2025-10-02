@@ -1,13 +1,51 @@
-import { Button, ButtonText, Card, Center, Heading, HStack, Icon, Text, View, VStack } from '@gluestack-ui/themed'
+import { Box, Button, ButtonText, Card, Center, CheckIcon, Divider, Heading, HStack, Icon, ScrollView, View, VStack } from '@gluestack-ui/themed'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { getDocumentAsync } from 'expo-document-picker'
 import { TriangleAlertIcon } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { StyleSheet } from 'react-native'
-import Svg, { Polyline } from 'react-native-svg'
+import { Alert, StyleSheet } from 'react-native'
+import Svg, { Polyline, Text } from 'react-native-svg'
 import { getToolkitWithTools } from '../../../../api/new/tool_sets/get_tool_set_with_tools'
 import ResultModal from './ResultModal'
 import ToolItem from './ToolItem'
+import { BACKEND_URL, WEB_SOCKET_URL } from '../../../../api/baseApi'
+import { sendImageToPredictRequest } from '../../../../api/new/send_image/send_image_to_predict'
+import { sendZipToPredictRequest } from '../../../../api/new/send_image/send_zip_to_predict'
+import { BOKOREZY_CLASS } from '../../warehouse_employee_role/tool_type/ToolTypeCreateScreen'
+
+const classesRusNames = new Map(Object.entries(
+    {
+        BOKOREZY: "Бокорезы",
+        PASSATIGI: "Пассатижи",
+        SHARNITSA: "Шэрница",
+        KOLOVOROT: "Коловорот",
+        RAZVODNOY_KEY: "Разводной ключ",
+        PASSATIGI_CONTROVOCHNY: "Пассатижи центровочные",
+        KEY_ROZGKOVY_NAKIDNOY_3_4: "Ключ рожковый/накидной 3/4",
+        OTVERTKA_PLUS: "Отвертка +",
+        OTVERTKA_MINUS: "Отвертка -",
+        OTVERTKA_OFFSET_CROSS: "Отвертка на смещенный крест",
+        OTKRYVASHKA_OIL_CAN: "Открывашка для банок с маслом",
+    }
+))
+
+const colorsArr = [
+    "#594f32",
+    "#a677af",
+    "#555787",
+    "#383d0c",
+    "#898979",
+    "#563d96",
+    "#84013e",
+    "#576655",
+    "#713bd6",
+    "#3f8c2c",
+    "#15261c",
+    "#999ed8",
+    "#83c9ef",
+    "#0b0219",
+    "#181919",
+]
 
 // использовать Grid
 const ToolsScanerScreen = ({ route, navigation }) => {
@@ -37,10 +75,11 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     const [height, setHeight] = useState(0)
 
     const [isShowMessAlert, setIsShowMessAlert] = useState(false)
+    const [isShowSuccessAlert, setIsShowSuccessModal] = useState(true)
 
     const [boxes, setBoxes] = useState([])
-
     const [paths, setPaths] = useState([])
+    const [classes, setClasses] = useState([])
 
     useEffect(() => {
         setPaths(boxes.map(
@@ -48,6 +87,15 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     }, [boxes, width, height])
 
     const [permission, requestPermission] = useCameraPermissions()
+    //Alert.alert("Нет доступа к камере")
+    // useEffect(() => {
+    //     if (!permission) {
+
+    //     } else if (permission != null && !permission.granted) {
+    //         //Alert.alert("Нет доступа к камере")
+    //         //requestPermission()
+    //     }
+    // }, [permission])
 
     const captureFrame = useCallback(async () => {
         //console.log("CAPTURE" + cameraRef.current + "-" + isStreaming)
@@ -68,6 +116,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                     "frame": "${data.base64}"
                 }`
                 //console.log(frameJs)
+
                 socketRef.current.send(frameJs)
             }
         } catch (error) {
@@ -77,7 +126,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
-        streamIntervalRef.current = setInterval(captureFrame, 1000); // 5 FPS
+        streamIntervalRef.current = setInterval(captureFrame, 1000); 
     }, [captureFrame])
 
     const stopStream = () => {
@@ -89,13 +138,23 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     }
 
     const onUploadPhotoClick = async () => {
-        var file = await getDocumentAsync({ type: ["image/jpeg", "image/png"] })
-        console.log(file.assets)
+        var result = await getDocumentAsync({ type: ["image/jpeg", "image/png"] })
+        if (result.assets.length > 0) {
+            sendImageToPredictRequest({
+                file: result.assets[0],
+                onSuccess: (data) => { }
+            })
+        }
     }
 
     const onUploadZipClick = async () => {
-        var file = await getDocumentAsync({ type: 'application/zip' })
-        console.log(file.assets[0])
+        var result = await getDocumentAsync({ type: 'application/zip' })
+        if (result.assets.length > 0) {
+            sendZipToPredictRequest({
+                file: result.assets[0],
+                onSuccess: (data) => { }
+            })
+        }
     }
     //             {
     //     "classes": [
@@ -134,25 +193,26 @@ const ToolsScanerScreen = ({ route, navigation }) => {
             nBoxes.forEach((b, index, a) => {
                 const classNum = nBoxes[index][0]
                 oBoxes.push({
-                    x1: 1-nBoxes[index][1],
+                    x1: 1 - nBoxes[index][1],
                     y1: nBoxes[index][2],
-                    x2: 1-nBoxes[index][3],
+                    x2: 1 - nBoxes[index][3],
                     y2: nBoxes[index][4],
-                    x3: 1-nBoxes[index][5],
+                    x3: 1 - nBoxes[index][5],
                     y3: nBoxes[index][6],
-                    x4: 1-nBoxes[index][7],
+                    x4: 1 - nBoxes[index][7],
                     y4: nBoxes[index][8],
                 }
                 )
             })
             console.log(oBoxes)
             setBoxes(oBoxes)
+            setClasses(classes)
         }
     }
 
     useEffect(() => {
         console.log("USE_EFFECT")
-        socketRef.current = new WebSocket("ws://localhost:8000/api/ws/video") //io("ws://localhost:8000/ws/video")
+        socketRef.current = new WebSocket(WEB_SOCKET_URL + "/api/ws/video") //io("ws://localhost:8000/ws/video")
         socketRef.current.onmessage = (event) => {
             onDetectionEvent(JSON.parse(event.data))
         }
@@ -169,27 +229,31 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     }, []);
 
 
-    if (!permission) { return <View /> }
+    // if (!permission) {
+    //     console.log("Не удалось получить доступ к камере")
+    //     //return <View /> 
+    // }
 
-    if (!permission.granted) {
-        return (
-            <View style={styles.container} width='100%' height='100%'>
-                <Center p='$10'>
-                    <Card>
-                        <VStack p='$5'>
-                            <Text mb='$10' size='2xl' style={styles.message}>Необходимо разрешить доступ к камере</Text>
-                            <Button onPress={requestPermission} title="grant permission">
-                                <ButtonText>Разрешить</ButtonText>
-                            </Button>
-                        </VStack>
-                    </Card>
-                </Center>
-            </View>
-        );
-    }
+    // if (!permission.granted) {
+    //     console.log("Не удалось получить доступ к камере!")
+    //     // return (
+    //     //     <View style={styles.container} width='100%' height='100%'>
+    //     //         <Center p='$10'>
+    //     //             <Card>
+    //     //                 <VStack p='$5'>
+    //     //                     <Text mb='$10' size='2xl' style={styles.message}>Необходимо разрешить доступ к камере</Text>
+    //     //                     <Button onPress={requestPermission} title="grant permission">
+    //     //                         <ButtonText>Разрешить</ButtonText>
+    //     //                     </Button>
+    //     //                 </VStack>
+    //     //             </Card>
+    //     //         </Center>
+    //     //     </View>
+    //     // );
+    // }
 
     return (
-        <>
+        <ScrollView>
             <HStack style={styles.container}>
                 <VStack style={styles.container_buttons} p='$1'>
                     <Heading size='lg' m='$5'>Набор №12312312312</Heading>
@@ -207,16 +271,20 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                                 probability={0.99}
                                 threshold={0.98}
                             />
+                            <VStack space='md'>
+                                <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
+                                    <ButtonText>Сдать</ButtonText>
+                                </Button>
+                                <Divider />
+                                <Text>Для тестирования:</Text>
+                                <Button variant='outline' onPress={onUploadPhotoClick}>
+                                    <ButtonText>Загрузить фото</ButtonText>
+                                </Button>
+                                <Button variant='outline' onPress={onUploadZipClick}>
+                                    <ButtonText>Загрузить архив</ButtonText>
+                                </Button>
+                            </VStack>
 
-                            <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
-                                <ButtonText>Зафиксировать</ButtonText>
-                            </Button>
-                            <Button variant='outline' onPress={onUploadPhotoClick}>
-                                <ButtonText>Загрузить фото</ButtonText>
-                            </Button>
-                            <Button variant='outline' onPress={onUploadZipClick}>
-                                <ButtonText>Загрузить архив</ButtonText>
-                            </Button>
                         </VStack>
                     </Card>
                 </VStack>
@@ -251,18 +319,27 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             height={`${height}px`}
                             width={`${width}px`}
                         >
-                            {paths.map(p => {
+                            {paths.map((p, index) => {
                                 return (
-                                    <Polyline
-                                        points={p}
-                                        fill="#ff23234f"
-                                        stroke={"red"}
-                                        strokeWidth="2px"
-                                    />
+                                    <>
+                                        <Polyline
+                                            fill="transparent"
+                                            points={p}
+                                            stroke={colorsArr[index]}
+                                            strokeWidth="2px"
+                                        />
+                                    </>
                                 )
                             })}
                         </Svg>
                         {isShowMessAlert ? <MessAlert
+                            style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                            }}
+                        /> : <></>}
+                        {isShowSuccessAlert ? <SuccessAlert
                             style={{
                                 position: 'absolute',
                                 top: 0,
@@ -278,7 +355,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                 onClose={setIsShowResultModal.bind(null, false)}
                 onContinueClick={setIsShowResultModal.bind(null, false)}
             />
-        </>
+        </ScrollView>
     )
 }
 
@@ -287,6 +364,15 @@ const MessAlert = ({ style }) => {
         <HStack style={style} p="$3" space='md' bgColor='#f79494ff' borderColor='#ff0000ff' alignItems='center'>
             <Icon as={TriangleAlertIcon} size='xl' />
             <Text size="lg" bold="true">{`Кажется, инструменты перекрывают друга друга.\nПопробуйте разложить их более равномерно`}</Text>
+        </HStack>
+    )
+}
+
+const SuccessAlert = ({ style }) => {
+    return (
+        <HStack style={style} p="$3" space='md' bgColor='#f79494ff' borderColor='#ff0000ff' alignItems='center'>
+            <Icon as={CheckIcon} size='xl' />
+            <Text size="lg" bold="true">{`Все инструменты из набора распознаны\nМожно завершить приемка`}</Text>
         </HStack>
     )
 }

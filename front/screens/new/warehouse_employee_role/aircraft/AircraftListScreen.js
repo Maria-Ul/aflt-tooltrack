@@ -10,6 +10,10 @@ const AircraftListScreen = ({ navigation }) => {
   var [searchResult, setSearchResult] = useState(null)
   var [searchQuery, setSearchQuery] = useState("")
 
+  const unsub = navigation.addListener('focus', () => {
+      loadAircrafts()
+  });
+
   const loadAircrafts = () => {
     getAllAircraftsRequest({
       onSuccess: (data) => {
@@ -30,7 +34,7 @@ const AircraftListScreen = ({ navigation }) => {
   useEffect(() => {
     if (aircraftsList != null) {
       //console.log(aircraftsList)
-      const filtered = aircraftsList.filter( item => 
+      const filtered = aircraftsList.filter(item =>
         item.tail_number.includes(searchQuery)
       )
       //console.log(filtered)
@@ -81,7 +85,7 @@ const AircraftListItem = ({ data, onCreateRequest, onEdit }) => {
       <HStack>
         <Box h="$20" w="$5" bgColor="blue" />
         <VStack pl="$5">
-          <Icon as={Plane}/>
+          <Icon as={Plane} />
           <Text bold={true} size='lg' >{data.tail_number}</Text>
           <Text size='md'>{data.model}</Text>
         </VStack>
