@@ -225,4 +225,6 @@ yolo11s-seg.pt
 yolo11m-cls.pt
 yolo11n.pt
 
+metrics/
+
 back/app/ml/img/output.jpg

@@ -596,11 +596,27 @@ def reconstruct(text):
 
 
 def get_prediction_results(model, img_path):
+    script_dir = Path(__file__).parent.absolute()
+    model_path = script_dir / "weights/yolo11s-classify-overlap.pt"
+    overlap_model = OverlapClassifier(
+        model_path=model_path, 
+        positive_label="overlap",
+        threshold=0.5, 
+        imgsz=640,
+        device=0 if torch.cuda.is_available() else "cpu",
+        verbose=False
+    )
+
     model.predict_image(img_path)
     # OBB в формате [class_index, x1, y1, x2, y2, x3, y3, x4, y4]
     obb_rows = model.get_oriented_bboxes(normalized=True)
     classes = [obb[0] for obb in obb_rows]
     masks = model.get_masks()
+
+    overlap_flag, overlap_score = None, None
+    if overlap_model is not None:
+        overlap_flag, overlap_score, _ = overlap_model.predict(img_path, threshold=None)
+
     img = cv2.imread(img_path)
     obb_texts = []
     for i, obb in enumerate(obb_rows):
@@ -614,7 +630,7 @@ def get_prediction_results(model, img_path):
 
     probs  = model.get_probs()
 
-    return classes, obb_rows, masks, probs
+    return classes, obb_rows, masks, probs, overlap_flag, overlap_score
 
 def run(img_path):
     script_dir = Path(__file__).parent.absolute()
@@ -632,15 +648,33 @@ def run(img_path):
     #     use_doc_orientation_classify=True, 
     #     use_doc_unwarping=True, 
     #     use_textline_orientation=True)
-    classes, obb_rows, masks, probs = get_prediction_results(model, img_path)
+    classes, obb_rows, masks, probs, overlap_flag, overlap_score = get_prediction_results(model, img_path)
     
-    return classes, obb_rows, masks, probs
+    return classes, obb_rows, masks, probs, overlap_flag, overlap_score
 
 def get_prediction_results_with_img(model, img_path):
+    script_dir = Path(__file__).parent.absolute()
+    model_path = script_dir / "weights/yolo11s-classify-overlap.pt"
+    overlap_model = OverlapClassifier(
+        model_path=model_path, 
+        positive_label="overlap",
+        threshold=0.5, 
+        imgsz=640,
+        device=0 if torch.cuda.is_available() else "cpu",
+        verbose=False
+    )
+
     model.predict_image(img_path)
     obb_rows = model.get_oriented_bboxes(normalized=True)
     classes = [obb[0] for obb in obb_rows]
     masks = model.get_masks()
+
+
+    overlap_flag, overlap_score = None, None
+    if overlap_model is not None:
+        overlap_flag, overlap_score, _ = overlap_model.predict(img_path, threshold=None)
+
+
     img = cv2.imread(img_path)
     obb_texts = []
     for i, obb in enumerate(obb_rows):
@@ -655,7 +689,7 @@ def get_prediction_results_with_img(model, img_path):
     probs  = model.get_probs()
     img = model.visualize_oriented_bboxes(img_path=img_path)
 
-    return classes, obb_rows, masks, probs, img
+    return classes, obb_rows, masks, probs, img, overlap_flag, overlap_score
 
 
 if __name__ == "__main__":
@@ -676,3 +710,101 @@ if __name__ == "__main__":
     #     use_doc_unwarping=True, 
     #     use_textline_orientation=True)
     classes, obb_rows, masks, obb_texts = get_prediction_results(model, img_path)
+
+
+class OverlapClassifier:
+    """
+    Бинарный классификатор 'overlap'/'clean' на YOLO-классификации.
+    Параметры:
+      - model_path: путь к весам (например, 'runs/cls/overlap_y11n/weights/best.pt' или ваш путь)
+      - positive_label: как называется позитивный класс в датасете (по умолчанию: 'overlap')
+      - threshold: порог вероятности для вердикта True
+      - imgsz: входное разрешение (у вас 640)
+    """
+    def __init__(
+        self,
+        model_path="ml/weights/yolo11s-classify-overlap.pt",
+        positive_label="overlap",
+        threshold=0.5,
+        imgsz=640,
+        device=None,   # 0 | 'cpu' | None(авто)
+        verbose=False
+    ):
+        self.model_path = str(model_path)
+        self.positive_label = str(positive_label).lower()
+        self.threshold = float(threshold)
+        self.imgsz = int(imgsz)
+        self.verbose = verbose
+
+        if device is None:
+            self.device = 0 if torch.cuda.is_available() else 'cpu'
+        else:
+            self.device = device
+
+        self.model = YOLO(self.model_path)  # Классификационная модель
+        # Имена классов
+        self.names = getattr(self.model, "names", None)
+
+        # Попробуем найти индекс позитивного класса по имени
+        self.pos_idx = self._find_positive_index(self.names, self.positive_label)
+
+    @staticmethod
+    def _names_to_dict(names):
+        if isinstance(names, dict):
+            return names
+        if isinstance(names, (list, tuple)):
+            return {i: n for i, n in enumerate(names)}
+        return {}
+
+    def _find_positive_index(self, names, positive_label):
+        nd = self._names_to_dict(names)
+        pos_idx = None
+        for i, n in nd.items():
+            if str(n).lower() == positive_label:
+                pos_idx = int(i)
+                break
+    
+        if pos_idx is None:
+            if len(nd) == 2:
+                pos_idx = 1
+            else:
+                pos_idx = None
+        return pos_idx
+
+    def predict(self, img_or_path, threshold=None):
+        """
+        Возвращает:
+          - verdict (bool): перекрытие есть?
+          - score (float): вероятность позитивного класса
+          - label (str): имя позитивного класса ('overlap'), на всякий
+        """
+        thr = float(threshold) if threshold is not None else self.threshold
+        half_flag = True if (isinstance(self.device, int) and torch.cuda.is_available()) else False
+
+        res = self.model.predict(
+            source=img_or_path,
+            imgsz=self.imgsz,
+            device=self.device,
+            half=half_flag,
+            verbose=self.verbose,
+            conf=None 
+        )[0]
+
+        # Вектор вероятностей
+        probs = getattr(res, "probs", None)
+        if probs is None or getattr(probs, "data", None) is None:
+            return False, 0.0, self.positive_label
+
+        p = probs.data
+        if hasattr(p, "cpu"):
+            p = p.cpu().numpy()
+        else:
+            p = np.asarray(p)
+
+        pos_idx = self.pos_idx
+        if pos_idx is None:
+            pos_idx = int(np.argmax(p))
+        score = float(p[pos_idx])
+
+        verdict = score >= thr
+        return verdict, score, self.positive_label

@@ -51,7 +51,7 @@ def process_single_image(image_path: str) -> Dict[str, Any]:
     )
     
     # Получаем предсказания
-    classes, obb_rows, masks, probs, img = get_prediction_results_with_img(model, image_path)
+    classes, obb_rows, masks, probs, img, overlap_flag, overlap_score = get_prediction_results_with_img(model, image_path)
     
     # Конвертируем masks в JSON-сериализуемый формат
     serializable_masks = []
@@ -78,6 +78,8 @@ def process_single_image(image_path: str) -> Dict[str, Any]:
         'probs': serializable_probs,
         'masks': serializable_masks,
         'obb_rows': obb_rows,
+        'overlap_flag': overlap_flag,
+        'overlap_score': overlap_score
     }, img
 
 @router.post("/predict/single")
