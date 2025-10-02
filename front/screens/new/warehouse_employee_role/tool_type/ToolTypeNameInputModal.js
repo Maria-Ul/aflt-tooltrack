@@ -10,6 +10,7 @@ const ToolTypeNameInputModal = ({
     onContinueClick,
 }) => {
     const [nameInput, setNameInput] = useState("")
+    const [selectedClass, setSelectedClass] = useState("")
 
     const selectorItems = classesList.map(c => {
         return (<SelectItem label={c} value={c} />)
@@ -44,7 +45,7 @@ const ToolTypeNameInputModal = ({
                             <InputField width="500px" value={nameInput} onChangeText={setNameInput} placeholder="Введите наименование" />
                         </Input>
                         {
-                            !isCategory ? <Select>
+                            !isCategory ? <Select onValueChange={setSelectedClass} value={selectedClass}>
                                 <SelectTrigger size="md">
                                     <SelectInput width="500px" placeholder="Выберите распознаваемый класс инструмента" />
                                     <SelectIcon className="mr-3" as={ChevronDownIcon} />
@@ -75,7 +76,7 @@ const ToolTypeNameInputModal = ({
                 <ModalFooter>
                     <HStack>
                         <Button
-                            onPress={onContinueClick.bind(null, nameInput)}
+                            onPress={onContinueClick.bind(null, nameInput, selectedClass)}
                             mr='$5'
                         >
                             <ButtonText>Добавить</ButtonText>

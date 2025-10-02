@@ -1,10 +1,10 @@
-import { Box, Button, ButtonText, Card, Center, CheckIcon, Divider, Heading, HStack, Icon, ScrollView, View, VStack } from '@gluestack-ui/themed'
+import { Text, Box, Button, ButtonText, Card, Center, CheckIcon, Divider, Heading, HStack, Icon, ScrollView, View, VStack } from '@gluestack-ui/themed'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import { getDocumentAsync } from 'expo-document-picker'
 import { TriangleAlertIcon } from 'lucide-react-native'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, StyleSheet } from 'react-native'
-import Svg, { Polyline, Text } from 'react-native-svg'
+import Svg, { Polyline } from 'react-native-svg'
 import { getToolkitWithTools } from '../../../../api/new/tool_sets/get_tool_set_with_tools'
 import ResultModal from './ResultModal'
 import ToolItem from './ToolItem'
@@ -12,6 +12,7 @@ import { BACKEND_URL, WEB_SOCKET_URL } from '../../../../api/baseApi'
 import { sendImageToPredictRequest } from '../../../../api/new/send_image/send_image_to_predict'
 import { sendZipToPredictRequest } from '../../../../api/new/send_image/send_zip_to_predict'
 import { BOKOREZY_CLASS } from '../../warehouse_employee_role/tool_type/ToolTypeCreateScreen'
+import { CONFIDENCE_THRESHOLD } from '../../../../App'
 
 const classesRusNames = new Map(Object.entries(
     {
@@ -126,7 +127,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
-        streamIntervalRef.current = setInterval(captureFrame, 1000); 
+        streamIntervalRef.current = setInterval(captureFrame, 1000);
     }, [captureFrame])
 
     const stopStream = () => {
@@ -256,21 +257,21 @@ const ToolsScanerScreen = ({ route, navigation }) => {
         <ScrollView>
             <HStack style={styles.container}>
                 <VStack style={styles.container_buttons} p='$1'>
-                    <Heading size='lg' m='$5'>Набор №12312312312</Heading>
+                    <Heading size='lg' m='$5'>{`Набор ${toolkitWithRelations != null ? toolkitWithRelations.batch_number : "-"}`}</Heading>
                     <Card>
                         <VStack p='$5' mb='$9'>
                             <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
-
-                            <ToolItem
-                                name='Пассатижи'
-                                probability={0.7}
-                                threshold={0.98}
-                            />
-                            <ToolItem
-                                name='Отвертка крестовая. PH4'
-                                probability={0.99}
-                                threshold={0.98}
-                            />
+                            {
+                                toolkitWithRelations != null ?
+                                    toolkitWithRelations.tool_set_type.tool_types.map((toolType) => {
+                                        <ToolItem
+                                            name={toolType.name}
+                                            probability={0.5}
+                                            threshold={CONFIDENCE_THRESHOLD}
+                                        />
+                                    })
+                                    : <>Загрузка данных о наборе</>
+                            }
                             <VStack space='md'>
                                 <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
                                     <ButtonText>Сдать</ButtonText>
@@ -361,7 +362,8 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
 const MessAlert = ({ style }) => {
     return (
-        <HStack style={style} p="$3" space='md' bgColor='#f79494ff' borderColor='#ff0000ff' alignItems='center'>
+        <HStack style={style} p="$3" space='md' bgColor='#f79494ff'
+            borderWidth="2px" borderColor='#ff0000ff' alignItems='center'>
             <Icon as={TriangleAlertIcon} size='xl' />
             <Text size="lg" bold="true">{`Кажется, инструменты перекрывают друга друга.\nПопробуйте разложить их более равномерно`}</Text>
         </HStack>
@@ -370,7 +372,8 @@ const MessAlert = ({ style }) => {
 
 const SuccessAlert = ({ style }) => {
     return (
-        <HStack style={style} p="$3" space='md' bgColor='#f79494ff' borderColor='#ff0000ff' alignItems='center'>
+        <HStack style={style} p="$3" space='md' bgColor='#94f794ff'
+            borderWidth="2px" borderColor='#2fff00ff' alignItems='center'>
             <Icon as={CheckIcon} size='xl' />
             <Text size="lg" bold="true">{`Все инструменты из набора распознаны\nМожно завершить приемка`}</Text>
         </HStack>

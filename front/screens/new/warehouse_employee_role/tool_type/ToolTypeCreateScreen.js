@@ -95,11 +95,12 @@ const ToolTypeCreateScreen = ({ navigation }) => {
         )
     }
 
-    const onSaveClick = (typeName) => {
+    const onSaveClick = (typeName, typeClass) => {
         createToolTypeRequest({
             name: typeName,
             category_id: isRootCategoryAdd ? null : selectedItem.id,
             is_item: !isCategoryModal,
+            type_class: typeClass,
             onSuccess: () => {
                 onCloseModal()
                 loadToolTypeTree()

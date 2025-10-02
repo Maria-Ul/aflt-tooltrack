@@ -1,11 +1,12 @@
 import { FlatList, StyleSheet } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { ButtonText, Card, Heading, HStack, ScrollView, Text, Button, Center, Icon, AddIcon, EditIcon, VStack, Divider, Box, Input, InputField, InputSlot, InputIcon, SearchIcon } from '@gluestack-ui/themed'
+import { ButtonText, Card, Heading, HStack, ScrollView, Text, Button, Center, Icon, AddIcon, EditIcon, VStack, Divider, Box, Input, InputField, InputSlot, InputIcon, SearchIcon, TrashIcon } from '@gluestack-ui/themed'
 import { AIRCRAFT_CREATE_ROUTE, REQUEST_CREATE_ROUTE, REQUEST_DETAILS_ROUTE } from '../../Screens'
 import { getAllAircraftsRequest } from '../../../../api/new/aircraft/get_all_aircrafts'
 import { BoltIcon, Construction, ConstructionIcon, HardHat, Plane } from 'lucide-react-native'
 import { getAllServiceRequests } from '../../../../api/new/service_request/get_all_service_requests'
 import { TouchableOpacity } from 'react-native'
+import { deleteServiceRequest } from '../../../../api/new/service_request/delete_service_request'
 
 export const REQUEST_CREATED = "CREATED"
 export const REQUEST_IN_PROGRESS = "IN_PROGRESS"
@@ -18,13 +19,22 @@ const RequestsListScreen = ({ navigation }) => {
   var [searchQuery, setSearchQuery] = useState("")
 
   navigation.addListener('focus', () => {
-      loadServiceRequests()
+    loadServiceRequests()
   });
 
   const loadServiceRequests = () => {
     getAllServiceRequests({
       onSuccess: (data) => {
         setRequestsList(data)
+      }
+    })
+  }
+
+  const onDeleteRequest = (requestId) => {
+    deleteServiceRequest({
+      requestId: requestId,
+      onSuccess: () => {
+        loadServiceRequests()
       }
     })
   }
@@ -81,6 +91,7 @@ const RequestsListScreen = ({ navigation }) => {
                   data={item}
                   onAction={() => { }}
                   onPress={onPressRequest.bind(null, item)}
+                  onDelete={onDeleteRequest.bind(null, item.id)}
                 />
               }
             }
@@ -92,7 +103,7 @@ const RequestsListScreen = ({ navigation }) => {
   )
 }
 
-const RequestListItem = ({ data, onAction, onPress }) => {
+const RequestListItem = ({ data, onAction, onPress, onDelete }) => {
   var statusText = ""
   var bgColor = ""
   var buttonAction = ""
@@ -133,12 +144,15 @@ const RequestListItem = ({ data, onAction, onPress }) => {
 
 
           <VStack space="md">
-            <RequestStatusBadge status={data.status}/>
+            <RequestStatusBadge status={data.status} />
             {showButton ?
               <Button action={buttonAction} onPress={onAction}>
                 <ButtonText >{buttonTExt}</ButtonText>
               </Button> : <></>
             }
+            <Button action='negative' onPress={onDelete}>
+              <Icon as={TrashIcon} color="white" />
+            </Button> : <></>
           </VStack>
         </HStack>
       </TouchableOpacity>
@@ -148,7 +162,7 @@ const RequestListItem = ({ data, onAction, onPress }) => {
   )
 }
 
-export const RequestStatusBadge = ({status}) => {
+export const RequestStatusBadge = ({ status }) => {
   var statusText = ""
   var bgColor = ""
   switch (status) {

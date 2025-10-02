@@ -2,30 +2,21 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import { afltToolscanApi } from "../../baseApi"
 import { SESSION_TOKEN } from "../login"
 
-export const createToolTypeRequest = async ({
-    name,
-    category_id,
-    is_item,
-    type_class,
+export const deleteServiceRequest = async ({
+    requestId,
     onSuccess
 }) => {
     const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
-    var response = await afltToolscanApi.post(
-        url = "/api/tool-types/",
-        data = {
-            name: name,
-            category_id: category_id,
-            is_item: is_item,
-            type_class: type_class,
-        },
+    var response = await afltToolscanApi.delete(
+        url = `/api/maintenance-requests/${requestId}`,
         {
             headers: {
                 'Authorization': "Bearer " + sessionToken
             }
         },
     )
-    if (response.status == 201) {
-        onSuccess(response.data)
+    if (response.status == 204) {
+        onSuccess()
         console.log(response)
     } else {
         console.log(response)
