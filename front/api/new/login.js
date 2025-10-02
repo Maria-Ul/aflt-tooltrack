@@ -5,6 +5,7 @@ import { ADMIN_ROLE, QA_EMPLOYEE_ROLE, WAREHOUSE_EMPLOYEE_ROLE, WORKER_ROLE, WOR
 export const SESSION_TOKEN = "sessionToken"
 export const USER_NAME = "userName"
 export const USER_ROLE = "userRole"
+export const USER_ROLE_RUS = "userRoleRus"
 
 export const loginRequest = async ({ username, password, onSuccess, onError }) => {
     var response = await afltToolscanApi.post(
@@ -17,7 +18,8 @@ export const loginRequest = async ({ username, password, onSuccess, onError }) =
     if (response.status == 200) {
         await AsyncStorage.setItem(SESSION_TOKEN, response.data.access_token)
         await AsyncStorage.setItem(USER_NAME, response.data.full_name)
-        await AsyncStorage.setItem(USER_ROLE, mapRole(response.data.role))
+        await AsyncStorage.setItem(USER_ROLE, response.data.role)
+        await AsyncStorage.setItem(USER_ROLE_RUS, mapRole(response.data.role))
 
         console.log(response)
         onSuccess({ resRole: response.data.role })

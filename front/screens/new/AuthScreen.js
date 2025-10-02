@@ -1,6 +1,6 @@
 import { Button, ButtonText, Card, Center, Heading, Input, InputField, ScrollView, Text, VStack } from "@gluestack-ui/themed"
 import { useEffect, useState } from "react"
-import { SESSION_TOKEN, loginRequest } from "../../api/new/login"
+import { SESSION_TOKEN, USER_ROLE, loginRequest } from "../../api/new/login"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import { EMPLOYEE_NUMBER_ROUTE, QA_EMPLOYEE_ROLE_ROUTE, REGISTRATION_SCREEN_ROUTE, TOOLS_SCANNER_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from "./Screens"
 import { ADMIN_ROLE, QA_EMPLOYEE_ROLE, WAREHOUSE_EMPLOYEE_ROLE, WORKER_ROLE, WORKERS_PIPELINE_ROLE } from "../../api/new/register"
@@ -12,12 +12,21 @@ const AuthScreen = ({ navigation }) => {
     useEffect(() => {
         const checkSession = async () => {
             const sessionToken = await AsyncStorage.getItem(SESSION_TOKEN)
-            if (sessionToken.length > 0) {
-                navigation.replace(EMPLOYEE_NUMBER_ROUTE)
+            const userRole = await AsyncStorage.getItem(USER_ROLE)
+            console.log("U_DATA", sessionToken, userRole)
+            if (sessionToken.length > 0 && userRole.length > 0) {
+                switch (userRole) {
+                    case WORKER_ROLE: navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE); break
+                    case ADMIN_ROLE: navigation.replace(ADMIN_ROLE); break
+                    case WAREHOUSE_EMPLOYEE_ROLE: navigation.replace(WAREHOUSE_EMPLOYEE_ROUTE); break
+                    case QA_EMPLOYEE_ROLE: navigation.replace(QA_EMPLOYEE_ROLE_ROUTE); break
+                    case WORKERS_PIPELINE_ROLE: navigation.replace(WORKERS_PIPELINE_ROLE_ROUTE); break
+                }
             }
         }
         checkSession()
     }, [])
+
     const onRegistration = () => {
         navigation.navigate(REGISTRATION_SCREEN_ROUTE)
     }

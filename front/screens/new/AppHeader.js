@@ -5,7 +5,7 @@ import { AUTH_SCREEN_ROUTE, USER_GUIDE_ROUTE } from "./Screens";
 import { logout } from "../../api/new/logout";
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { USER_NAME, USER_ROLE } from "../../api/new/login";
+import { USER_NAME, USER_ROLE, USER_ROLE_RUS } from "../../api/new/login";
 
 const APP_HEADER_HEIGHT = 80
 
@@ -38,7 +38,7 @@ export const headerRight = () => {
     useEffect(() => {
         const updateSessionData = async () => {
             var userName = await AsyncStorage.getItem(USER_NAME)
-            var userRole = await AsyncStorage.getItem(USER_ROLE)
+            var userRole = await AsyncStorage.getItem(USER_ROLE_RUS)
             setUserName(userName)
             setUserRole(userRole)
         }

@@ -144,7 +144,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
 
     const launchStream = useCallback(() => {
         setIsStreaming(true);
-        streamIntervalRef.current = setInterval(captureFrame, 1000);
+        streamIntervalRef.current = setInterval(captureFrame, 2000);
     }, [captureFrame])
 
     const stopStream = () => {
@@ -204,6 +204,7 @@ const ToolsScanerScreen = ({ route, navigation }) => {
         const nBoxes = event.obb_rows
         const classes = event.classes
         const probs = event.probs
+        setIsShowMessAlert(event.overlap_flag)
         console.log(event)
         if (nBoxes != null) {
             //console.log(nBoxes)
@@ -272,12 +273,25 @@ const ToolsScanerScreen = ({ route, navigation }) => {
     // }
 
     return (
-        <ScrollView>
-            <HStack style={styles.container}>
-                <VStack style={styles.container_buttons} p='$1'>
-                    <Heading size='lg' m='$5'>{`Набор ${toolkitWithRelations != null ? toolkitWithRelations.batch_number : "-"}`}</Heading>
-                    <Card>
-                        <VStack p='$5' mb='$9' space='$5'>
+        <ScrollView horizontal={true} flex={1}>
+            <HStack flex={1}>
+                <Box flex={30} position='relative' width="25%" bg="$backgroundLight0" padding="$2">
+                    <Heading size='lg' mb="$3">{`Набор ${toolkitWithRelations != null ? toolkitWithRelations.batch_number : "-"}`}</Heading>
+                    <VStack space='md'>
+                        <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
+                            <ButtonText>Сдать</ButtonText>
+                        </Button>
+                        <Divider />
+                        <Text>Для тестирования:</Text>
+                        <Button variant='outline' onPress={onUploadPhotoClick}>
+                            <ButtonText>Загрузить фото</ButtonText>
+                        </Button>
+                        <Button variant='outline' onPress={onUploadZipClick}>
+                            <ButtonText>Загрузить архив</ButtonText>
+                        </Button>
+                    </VStack>
+                    <ScrollView flex={1}>
+                        <VStack space='$5'>
                             <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
                             {
                                 toolkitWithRelations != null ?
@@ -295,25 +309,12 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                                     })
                                     : <>Загрузка данных о наборе</>
                             }
-                            <VStack space='md'>
-                                <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
-                                    <ButtonText>Сдать</ButtonText>
-                                </Button>
-                                <Divider />
-                                <Text>Для тестирования:</Text>
-                                <Button variant='outline' onPress={onUploadPhotoClick}>
-                                    <ButtonText>Загрузить фото</ButtonText>
-                                </Button>
-                                <Button variant='outline' onPress={onUploadZipClick}>
-                                    <ButtonText>Загрузить архив</ButtonText>
-                                </Button>
-                            </VStack>
-
                         </VStack>
-                    </Card>
-                </VStack>
-                <VStack>
-                    <View p='$10'
+                    </ScrollView>
+                </Box>
+
+                <Box flex={70} position='relative'>
+                    <View p='$3'
                         style={styles.container_camera}>
                         <View onLayout={(event) => {
                             const { x, y, width, height } = event.nativeEvent.layout
@@ -333,12 +334,13 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                                     launchStream()
                                 }}
                             />
-                            <Text style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                zIndex: 0,
-                            }} size='lg' bold={true}>Видео с веб-камеры</Text>
+                            {permission == null || !permission.granted ?
+                                <Text style={{
+                                    position: 'absolute',
+                                    top: '$4',
+                                    left: '$4',
+                                }} size='lg' bold={true}>Видео с веб-камеры недоступно</Text> : <></>}
+
                             <Svg style={{
                                 elevation: 10,
                                 position: "absolute",
@@ -379,16 +381,125 @@ const ToolsScanerScreen = ({ route, navigation }) => {
                             /> : <></>}
                         </View>
                     </View>
-                </VStack>
-
+                </Box >
             </HStack >
-            <ResultModal
-                isOpen={isShowResultModal}
-                isSuccessScan={false}
-                onClose={setIsShowResultModal.bind(null, false)}
-                onContinueClick={setIsShowResultModal.bind(null, false)}
-            />
-        </ScrollView>
+        </ScrollView >
+        // <ScrollView>
+        //     <HStack style={styles.container}>
+        //         <VStack style={styles.container_buttons} p='$1'>
+        //             <Heading size='lg' m='$5'>{`Набор ${toolkitWithRelations != null ? toolkitWithRelations.batch_number : "-"}`}</Heading>
+        //             <Card>
+        //                 <VStack p='$5' mb='$9' space='$5'>
+        //                     <Text size='lg' mb='$5'>Инструменты в наборе:</Text>
+        //                     {
+        //                         toolkitWithRelations != null ?
+        //                             toolkitWithRelations.tool_set_type.tool_types.map((toolType) => {
+        //                                 const classIndex = classes.indexOf(toolType.tool_class)
+        //                                 const toolProb = probs[classIndex]
+        //                                 const classColor = classColorsMap.get(toolType.tool_class)
+        //                                 //console.log("CLASS_COLOR", classColor)
+        //                                 return (<ToolItem
+        //                                     color={classColor}
+        //                                     name={toolType.name}
+        //                                     probability={toolProb}
+        //                                     threshold={CONFIDENCE_THRESHOLD}
+        //                                 />)
+        //                             })
+        //                             : <>Загрузка данных о наборе</>
+        //                     }
+        //                     <VStack space='md'>
+        //                         <Button mb='$3' onPress={setIsShowResultModal.bind(null, true)}>
+        //                             <ButtonText>Сдать</ButtonText>
+        //                         </Button>
+        //                         <Divider />
+        //                         <Text>Для тестирования:</Text>
+        //                         <Button variant='outline' onPress={onUploadPhotoClick}>
+        //                             <ButtonText>Загрузить фото</ButtonText>
+        //                         </Button>
+        //                         <Button variant='outline' onPress={onUploadZipClick}>
+        //                             <ButtonText>Загрузить архив</ButtonText>
+        //                         </Button>
+        //                     </VStack>
+
+        //                 </VStack>
+        //             </Card>
+        //         </VStack>
+        //         <VStack>
+        //             <View p='$10'
+        //                 style={styles.container_camera}>
+        //                 <View onLayout={(event) => {
+        //                     const { x, y, width, height } = event.nativeEvent.layout
+        //                     setHeight(height)
+        //                     setWidth(width)
+        //                     console.log("SIZE:" + x + " " + y + " " + width + " " + height)
+        //                 }} style={styles.container_camera} >
+        //                     <CameraView
+        //                         mode='video'
+        //                         ratio='4:3'
+        //                         videoQuality='4:3'
+        //                         ref={cameraRef}
+        //                         style={styles.camera}
+        //                         onCameraReady={() => {
+        //                             console.log("READY")
+        //                             console.log(paths[0])
+        //                             launchStream()
+        //                         }}
+        //                     />
+        //                     <Text style={{
+        //                         position: 'absolute',
+        //                         top: 0,
+        //                         left: 0,
+        //                         zIndex: 0,
+        //                     }} size='lg' bold={true}>Видео с веб-камеры</Text>
+        //                     <Svg style={{
+        //                         elevation: 10,
+        //                         position: "absolute",
+        //                         zIndex: 1,
+        //                         //top: '$10',
+        //                         //left: '$10',
+        //                         //backgroundColor: "red"
+        //                     }} viewBox={`0 0 ${width} ${height}`}
+        //                         height={`${height}px`}
+        //                         width={`${width}px`}
+        //                     >
+        //                         {paths.map((p, index) => {
+        //                             return (
+        //                                 <>
+        //                                     <Polyline
+        //                                         fill="transparent"
+        //                                         points={p}
+        //                                         stroke={colorsArr[index]}
+        //                                         strokeWidth="2px"
+        //                                     />
+        //                                 </>
+        //                             )
+        //                         })}
+        //                     </Svg>
+        //                     {isShowMessAlert ? <MessAlert
+        //                         style={{
+        //                             position: 'absolute',
+        //                             top: 0,
+        //                             right: 0,
+        //                         }}
+        //                     /> : <></>}
+        //                     {isShowSuccessAlert ? <SuccessAlert
+        //                         style={{
+        //                             position: 'absolute',
+        //                             top: 0,
+        //                             right: 0,
+        //                         }}
+        //                     /> : <></>}
+        //                 </View>
+        //             </View>
+        //         </VStack>
+        //     </HStack >
+        //     <ResultModal
+        //         isOpen={isShowResultModal}
+        //         isSuccessScan={false}
+        //         onClose={setIsShowResultModal.bind(null, false)}
+        //         onContinueClick={setIsShowResultModal.bind(null, false)}
+        //     />
+        // </ScrollView>
     )
 }
 
@@ -427,16 +538,18 @@ const styles = StyleSheet.create({
         width: "1200px",
         height: "900px",
         aspectRatio: '4:3',
-        'clip-path': 'inset(0% 0% 0% 0% round 20px)',
+
     },
     camera: {
         //width: "640px",
         //height: "480px",
-        flex: 70,
+        width: "1200px",
+        height: "900px",
+        flex: 1,
         aspectRatio: '4:3',
         borderWidth: "2px",
         borderColor: "grey",
         backgroundColor: 'tranparent',
-        zIndex: 100,
-}
+        'clip-path': 'inset(0% 0% 0% 0% round 20px)',
+    }
 })
