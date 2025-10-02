@@ -46,7 +46,6 @@ def _openvino_available():
     except Exception:
         return False
 
-
 class SegmentModel:
     """
     Автовыбор бэкенда:
@@ -264,7 +263,7 @@ class SegmentModel:
         self,
         save_path="obb_vis.png",
         show=False,
-        line_thickness=2,
+        line_thickness=1,
         mask_alpha=0.35,
         draw_mask_contours=True,
         mask_contour_thickness=1,
@@ -275,7 +274,7 @@ class SegmentModel:
         mask_s_mul=0.90,             
         mask_v_mul=1.35,
         auto_scale_labels=True, 
-        ref_size=640,                         
+        ref_size=200,                         
     ):
         if self.r is None:
             raise RuntimeError("Сначала вызовите predict_image(...)")
@@ -289,15 +288,15 @@ class SegmentModel:
         # --- вычисляем коэффициент масштабирования ---
         k = self._compute_label_scale(w, h, ref=ref_size) if auto_scale_labels else 1.0
         # Можно чуть “приглушить” линии, чтобы не становились слишком толстыми на 5-8k
-        k_line = k * 0.5
-        k_contour = k * 0.5
+        k_line = k 
+        k_contour = k 
 
-        font_scale = float(text_scale) * k
-        font_th = max(1, int(round(text_thickness * k)))
+        font_scale = float(text_scale) * (k / 3.0)
+        font_th = max(1, int(round(text_thickness * k)) - 1)
         line_th = max(1, int(round(line_thickness * k_line)))
         contour_th = max(1, int(round(mask_contour_thickness * k_contour)))
-        pad_px = max(2, int(round(4 * k)))  # внутренние отступы плашки
-
+        pad_px = max(2, int(round(4 * k)))
+        
 
         names_raw = getattr(self.r, "names", None) or getattr(self.model, "names", None) or {}
         id2disp = self._resolve_display_names(names_raw)
@@ -456,17 +455,13 @@ class SegmentModel:
         # 3) Фолбэк — пусто (будем брать str(cls_id))
         return {}
 
-    def _compute_label_scale(self, w: int, h: int, ref: int = 640, min_k: float = 0.7, max_k: float = 3.0) -> float:
+    def _compute_label_scale(self, w: int, h: int, ref: int = 200, min_k: float = 2.0, max_k: float = 12.0) -> float:
         """
-        Масштаб для шрифтов/толщин по размеру изображения.
-        Берём геометрическое среднее сторон относительно ref (обычно 640), чтобы быть устойчивым к соотношению сторон.
+        k ~ line width (lw) = min(h, w) / 200.
         """
-        k = ((w * h) ** 0.5) / float(ref)
-        if k < min_k:
-            return float(min_k)
-        if k > max_k:
-            return float(max_k)
-        return float(k)
+        b = min(w, h)
+        k = b / float(ref)/4
+        return float(np.clip(k, min_k, max_k))
 
     def _draw_label_box(
         self,
