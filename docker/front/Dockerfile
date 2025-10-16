@@ -7,12 +7,10 @@ ENV NODE_ENV development
 # Setting up the work directory
 WORKDIR /app
 
-# Installing dependencies
-COPY ./front/package.json ./front/package-lock.json ./
-RUN npm install
-
 # Copying all the files in our project
 COPY ./front/. .
+
+RUN npm install
 
 # Building our application
 # RUN npm run build
