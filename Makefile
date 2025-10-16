@@ -32,6 +32,9 @@ restore:
 	docker exec aflt-tooltrack-db-1 psql -U myuser -d postgres -h localhost -c "CREATE DATABASE mydb;"
 	docker exec -i aflt-tooltrack-db-1 psql -U myuser -d mydb -h localhost < dump.sql
 
+dump:
+	docker exec aflt-tooltrack-db-1 pg_dump -U myuser -d mydb -h localhost > dump.sql
+
 down: ## Stop all services
 	$(COMPOSE) down
 
