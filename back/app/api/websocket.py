@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 from pathlib import Path
 from app.ml import predict_yolo_seg_prod
+import os
+import shutil
 
 router = APIRouter(prefix="/ws", tags=["WebSocket видео потоки"])
 
@@ -109,13 +111,21 @@ class ConnectionManager:
             frame_size = len(base64.b64decode(frame_data))
             print(f'📹 Кадр от {client_id[:8]}... | FPS: {fps:.1f} | Размер: {frame_size} байт')
             
+            client_dir = f"/app/app/ml/img/{client_id[:8]}"
+    
+            if False == os.path.exists(client_dir):
+                os.mkdir(client_dir)
+
             # Декодируем base64 в бинарные данные
             image_data = base64.b64decode(frame_data)
+            input_path = f'{client_dir}/input.jpg'
             # Сохраняем в файл
-            with open('/app/app/ml/img/output.jpg', 'wb') as f:
+            with open(input_path, 'wb') as f:
                 f.write(image_data)
 
-            classes, obb_rows, masks, probs, overlap_flag, overlap_score = predict_yolo_seg_prod.run('/app/app/ml/img/output.jpg')
+            classes, obb_rows, masks, probs, overlap_flag, overlap_score, img = predict_yolo_seg_prod.run(input_path, client_dir)
+            # Сохраняем в файл
+            shutil.copy(img, f'{client_dir}/output.jpg')
 
             # Конвертируем masks в JSON-сериализуемый формат
             serializable_masks = []
