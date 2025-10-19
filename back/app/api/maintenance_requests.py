@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from .dependencies import get_db, get_current_user
 from app.models import models
 from app.schemas import maintenance_request_schema, incident_schema
+import base64
 
 router = APIRouter(prefix="/maintenance-requests", tags=["Заявки на выполнение тех. обслуживания"])
 
@@ -557,8 +558,14 @@ def mark_request_as_incident(
     # Генерируем моковые пути к изображениям
     from datetime import datetime
     timestamp = int(datetime.now().timestamp())
-    raw_image_path = f"/uploads/incidents/{timestamp}_raw.jpg"
-    annotated_image_path = f"/uploads/incidents/{timestamp}_annotated.jpg"
+
+
+    client_dir = f"/app/app/ml/img/client_1"
+    with open(f'{client_dir}/input.jpg', 'rb') as image_file:
+        raw_base64_string = base64.b64encode(image_file.read()).decode('utf-8')
+
+    with open(f'{client_dir}/output.jpg', 'rb') as image_file:
+        annotated_base64_string = base64.b64encode(image_file.read()).decode('utf-8')
     
     # Создаем инцидент
     incident = models.Incident(
@@ -567,8 +574,8 @@ def mark_request_as_incident(
         aircraft_id=maintenance_request.aircraft_id,
         tool_set_id=maintenance_request.tool_set_id,
         maintenance_request_id=maintenance_request.id,
-        raw_image=raw_image_path,
-        annotated_image=annotated_image_path,
+        raw_image=raw_base64_string,
+        annotated_image=annotated_base64_string,
         status=incident_schema.IncidentStatus.OPEN,
         comments=incident_data.comments
     )

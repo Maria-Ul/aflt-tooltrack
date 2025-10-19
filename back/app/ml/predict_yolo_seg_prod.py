@@ -664,7 +664,7 @@ def get_prediction_results(model, img_path):
 
     return classes, obb_rows, masks, probs, overlap_flag, overlap_score
 
-def run(img_path):
+def run(img_path, client_dir):
     script_dir = Path(__file__).parent.absolute()
     model_path = script_dir / "weights/yolo11s-seg-tools.pt"
 
@@ -676,8 +676,10 @@ def run(img_path):
         verbose=True
     )
     classes, obb_rows, masks, probs, overlap_flag, overlap_score = get_prediction_results(model, img_path)
+
+    img = model.visualize_oriented_bboxes(img_path=img_path, save_path=client_dir)
     
-    return classes, obb_rows, masks, probs, overlap_flag, overlap_score
+    return classes, obb_rows, masks, probs, overlap_flag, overlap_score, img
 
 def get_prediction_results_with_img(model, img_path):
     script_dir = Path(__file__).parent.absolute()
