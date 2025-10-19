@@ -36,3 +36,6 @@ export const TOOL_TYPE_LIST_ROUTE = "Список типов инструмен�
 export const TOOL_TYPE_CREATE_ROUTE = "Добавление типа инструмента" 
 
 export const USER_GUIDE_ROUTE = "Инструкция"
+
+export const FAST_FLOW_ROUTE = "FastFlow"
+export const FAST_FLOW_SCREEN_ROUTE = "Прием/выдача инструментов"

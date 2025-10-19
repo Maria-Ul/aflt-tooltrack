@@ -7,7 +7,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GluestackUIProvider, } from '@gluestack-ui/themed';
 import { config } from "@gluestack-ui/config"
 import AuthScreen from './screens/new/AuthScreen';
-import { AUTH_SCREEN_ROUTE, QA_EMPLOYEE_ROLE_ROUTE, REGISTRATION_SCREEN_ROUTE, REQUESTS_LIST, TOOLS_SCANNER_ROUTE, USER_GUIDE_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from './screens/new/Screens';
+import { AUTH_SCREEN_ROUTE, FAST_FLOW_ROUTE, QA_EMPLOYEE_ROLE_ROUTE, REGISTRATION_SCREEN_ROUTE, REQUESTS_LIST, TOOLS_SCANNER_ROUTE, USER_GUIDE_ROUTE, WAREHOUSE_EMPLOYEE_ROUTE, WORKERS_PIPELINE_ROLE_ROUTE } from './screens/new/Screens';
 import RegistrationScreen from './screens/new/RegistrationScreen';
 import applyCustomConfig from './screens/new/ThemeConfig';
 import { guideHeaderRight, headerLeft, headerRight, headerStyle, preloginHeaderLeft, preloginHeaderRight } from './screens/new/AppHeader';
@@ -15,6 +15,7 @@ import WarehoueseEmployeeNavigation, { WarehouseEmployeeRoleDrawer } from './scr
 import WorkersPipelineNavigation from './screens/new/workers_pipline_role/WorkersPipelineNavigation';
 import UserGuideScreen from './screens/new/UserGuideScreen';
 import QAEmployeeNavigation from './screens/new/qa_role/QAEmployeeNavigation';
+import FastFlowNavigation from './screens/new/fast_flow/FastFlowNavigation';
 
 export const SERVICE_NAME = `Сервис приема и выдачи инструментов`
 // TODO панель настроек
@@ -29,6 +30,13 @@ export default function App() {
     <GluestackUIProvider config={config}>
       <NavigationContainer>
         <AppStack.Navigator>
+        <AppStack.Screen
+            name={FAST_FLOW_ROUTE}
+            component={FastFlowNavigation}
+            options={{
+              headerShown: false,
+            }}
+          />
           <AppStack.Screen
             name={AUTH_SCREEN_ROUTE}
             component={AuthScreen}
